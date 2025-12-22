@@ -1,0 +1,856 @@
+/* styles.css */
+
+:root {
+  --primary: #FFD700;
+  --dark: #1A1A1A;
+  --light: #FFFFFF;
+  --gray: #F5F5F5;
+  --accent: #E5C100;
+
+  /* new: responsive sidebar sizing */
+  --sidebar-width: 5cm; /* fixed slimmer sidebar */
+  --sidebar-bottom-height: 72px;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--dark);
+  background-color: var(--light);
+  line-height: 1.6;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Utility class to hide elements */
+.hidden {
+  display: none !important;
+}
+
+header {
+  background-color: var(--dark);
+  padding: 0.8rem 1rem; /* slimmer top bar */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header h1 {
+  margin: 0 auto;
+  font-size: 1.5rem; /* slightly smaller to match slimmer header */
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.5px;
+  text-align: center;
+}
+
+nav a {
+  color: var(--light);
+  margin-left: 2rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+nav a:hover {
+  color: var(--primary);
+}
+
+/* Make the Admin button invisible but clickable at the top-left corner */
+#admin-button {
+  position: fixed;
+  top: 0;
+  left: 0;
+  opacity: 0;          /* invisible */
+  margin: 0;
+  padding: 0;
+  width: 44px;         /* touch-friendly hit area */
+  height: 44px;
+  z-index: 1001;       /* above other elements */
+}
+
+/* Sidebar summary styles */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--sidebar-width); /* use responsive var */
+  background: var(--dark); /* black-ish */
+  color: var(--primary);   /* yellow like title */
+  z-index: 1100;
+  padding: 1.75rem 0.45rem;
+  box-shadow: 7px 0 8px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  /* ensure it doesn't obscure content visually: slight translucency */
+  background-color: rgba(26,26,26);
+}
+
+/* push main content to the right so it doesn't hide behind sidebar */
+body:not(.admin-page) main {
+  margin-left: calc(var(--sidebar-width) + 25px); /* keep spacing responsive */
+}
+
+/* Sidebar inner spacing tweaks for narrow layout */
+.sidebar-inner {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+  padding-right: 4px;
+}
+
+/* Sidebar search */
+.sidebar-search {
+  padding: 0 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-direction: column;
+}
+
+#sidebar-search-input,
+#sidebar-filter-select {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid rgba(255,215,0,0.15);
+  padding: 0.6rem;
+  border-radius: 8px;
+  outline: none;
+}
+
+#sidebar-search-input::placeholder {
+  color: rgba(255,215,0,0.6);
+}
+
+/* Groups list */
+.sidebar-groups {
+  padding: 0.5rem;
+  overflow-y: auto;
+  flex: 1 1 auto;
+}
+
+.sidebar-group-item {
+  display: block;
+  padding: 0.5rem 0.6rem;
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  margin-bottom: 0.25rem;
+}
+
+.sidebar-group-item:hover {
+  background: rgba(255,215,0,0.06);
+  transform: translateX(4px);
+}
+
+/* active group underline with slight scale animation */
+.sidebar-group-item.active {
+  position: relative;
+  transform: scale(1.03);
+}
+
+.sidebar-group-item.active::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: -6px;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 3px;
+  opacity: 0.95;
+  transform-origin: center;
+  animation: underlinePop 220ms ease forwards;
+}
+
+@keyframes underlinePop {
+  0% { transform: scaleX(0.6); opacity: 0; }
+  60% { transform: scaleX(1.05); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 1; }
+}
+
+/* Make sidebar collapse on small screens */
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    height: var(--sidebar-bottom-height);
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    padding: 0.45rem 0.5rem;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  main {
+    margin-left: 0;
+    margin-top: 0;
+    padding-bottom: calc(var(--sidebar-bottom-height) + 16px); /* keep main visible above bottom bar */
+  }
+  .sidebar-inner {
+    flex-direction: row;
+    gap: 0.6rem;
+    align-items: center;
+  }
+  .sidebar-search { display: none; }
+  .sidebar-groups { display: flex; gap: 0.5rem; overflow-x: auto; flex: 1; }
+  .sidebar-group-item { white-space: nowrap; padding: 0.36rem 0.7rem; border-radius: 999px; font-size: 0.95rem; }
+}
+
+footer {
+  background-color: var(--dark);
+  color: var(--light);
+  padding: 3rem 2rem;
+  margin-top: auto;
+}
+
+.footer-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.footer-content a {
+  color: var(--primary);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  margin-top: 1rem;
+  transition: color 0.2s ease;
+}
+
+.footer-content a:hover {
+  color: var(--accent);
+}
+
+.footer-content svg {
+  margin-right: 0.5rem;
+}
+
+/* Product listing and card styles */
+.product-group {
+  margin-bottom: 4rem;
+}
+
+.group-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 2rem;
+  position: relative;
+  display: inline-block;
+}
+
+.group-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--primary);
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.product-card {
+  background: var(--light);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Carousel styles */
+.product-carousel {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+}
+
+.carousel-images {
+  display: flex;
+  transition: transform 0.4s ease;
+  height: 100%;
+}
+
+.carousel-images img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.carousel-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--light);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  z-index: 2;
+}
+
+.carousel-button:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.carousel-button.prev { left: 12px; }
+.carousel-button.next { right: 12px; }
+
+.product-info {
+  padding: 1.5rem;
+}
+
+.product-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.product-card .price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 1rem 0;
+}
+
+.buy-button {
+  width: 100%;
+  background-color: var(--primary);
+  color: var(--dark);
+  border: none;
+  padding: 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.buy-button:hover {
+  background-color: var(--accent);
+}
+
+/* Modal styles */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+
+  /* center content */
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-content {
+  position: relative;
+  background-color: var(--light);
+  /* changed from margin-based centering to flex centered */
+  /* margin: 5% auto; */
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 700px;
+  border-radius: 20px; /* more rounded */
+  max-height: 90vh;
+  overflow: hidden; /* hide overflow to keep compact */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+/* Close button reposition and styling */
+.close-modal,
+.modal-close {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--dark);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal carousel & image sizing adjusted to be smaller and neater */
+.modal-carousel {
+  flex: 0 0 40%; /* reduce image area to make image smaller */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 220px;
+  background: #fafafa;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modal-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* carousel controls inside modal */
+.modal .carousel-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.45);
+  color: var(--light);
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  font-size: 0.9rem;
+}
+
+.modal .carousel-button.prev { left: 8px; }
+.modal .carousel-button.next { right: 8px; }
+
+.modal-details {
+  flex: 1 1 60%;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.modal-details h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.modal-details .price {
+  font-size: 1.2rem;
+  margin: 0.5rem 0 1rem;
+  font-weight: 700;
+}
+
+/* Make modal responsive: stack content on small screens */
+@media (max-width: 600px) {
+  /* Stack modal content and center everything for mobile */
+  .modal-content {
+    flex-direction: column;
+    padding: 1rem;
+    max-width: 95%;
+    border-radius: 14px;
+    align-items: center; /* ensure content is centered vertically/horizontally */
+    text-align: center;
+  }
+
+  .modal-carousel {
+    width: 100%;
+    flex: 0 0 auto;
+    height: 180px;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-details {
+    width: 100%;
+    overflow: visible;
+    max-height: 45vh; /* keep details scrollable if needed while keeping modal centered */
+  }
+
+  .modal-details h3,
+  .modal-details .price,
+  .modal-details p {
+    text-align: center;
+  }
+
+  .close-modal,
+  .modal-close {
+    right: 0.75rem;
+    top: 0.5rem;
+  }
+}
+
+/* Image preview styles for file inputs */
+.image-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.preview-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.remove-image {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--dark);
+  color: var(--light);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.edit-button {
+  background: var(--primary);
+  color: var(--dark);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+/* Cart styles */
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.cart-item-details {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cart-item-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.cart-item-info h4 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.remove-from-cart {
+  background: #FF4444;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#confirm-form {
+  margin-top: 2rem;
+}
+
+#confirmation-code {
+  width: 200px;
+  font-size: 1.5rem;
+  letter-spacing: 0.5rem;
+  text-align: center;
+  padding: 0.5rem;
+  margin: 1rem 0;
+}
+
+.group-input {
+  display: flex;
+  gap: 1rem;
+}
+
+#new-group {
+  flex: 1;
+}
+
+#product-group {
+  min-width: 200px;
+}
+
+/* Admin dashboard styles */
+#admin-dashboard {
+  background: var(--light);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+#product-form {
+  background: var(--gray);
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 3rem;
+}
+
+.admin-toolbar {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.secondary-button {
+  background: transparent;
+  color: var(--dark);
+  border: 1px solid #ddd;
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.secondary-button:hover {
+  background-color: #f0f0f0;
+  border-color: #ccc;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.file-label {
+  cursor: pointer;
+}
+
+#product-form input,
+#product-form textarea,
+#product-form select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+}
+
+#product-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 2rem;
+}
+
+#product-table th,
+#product-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.delete-button {
+  background: #FF4444;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Search styles */
+#search-container {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  position: relative;
+}
+
+.search-box {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+#search-input {
+  flex: 1;
+  padding: 1rem;
+  border: 2px solid var(--dark);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+#search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
+}
+
+#filter-select {
+  padding: 1rem;
+  border: 2px solid var(--dark);
+  border-radius: 8px;
+  background-color: var(--light);
+  font-size: 1rem;
+  min-width: 200px;
+  cursor: pointer;
+}
+
+#search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--light);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y: auto;
+  display: none;
+}
+
+.suggestion-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  list-style: none;
+}
+
+.suggestion-item:hover {
+  background-color: var(--gray);
+}
+
+.suggestion-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.suggestion-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.suggestion-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestion-name {
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.suggestion-group {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  main {
+    padding: 1rem;
+  }
+  
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  
+  header {
+    padding: 1rem;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  nav a {
+    margin: 0 1rem;
+  }
+  
+  .search-box {
+    flex-direction: column;
+  }
+  
+  #filter-select {
+    min-width: 100%;
+  }
+}
+
+/* Login and Admin Login form styling */
+.login-container {
+  max-width: 400px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background: var(--gray);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.login-form .form-group {
+  margin-bottom: 1.5rem;
+}

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin - Torres Materiais de Construção</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-page">
+  <header>
+    <div class="header-content">
+      <h1>Painel Administrativo</h1>
+      <nav>
+        <a href="index.html">Voltar para Loja</a>
+        <a href="#" id="logout-button" class="hidden">Sair</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="login-container">
+      <section id="login-section">
+        <h2>Login Administrativo</h2>
+        <form id="admin-login-form" class="login-form">
+          <div class="form-group">
+            <label for="admin-username">Email:</label>
+            <input type="email" id="admin-username" placeholder="Digite o email administrativo" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="admin-password">Senha:</label>
+            <input type="password" id="admin-password" placeholder="Digite a senha" required>
+          </div>
+          
+          <button type="submit" class="buy-button">Entrar</button>
+        </form>
+        <p style="margin-top:1rem; text-align:center;">
+          <a href="#" id="show-register">Criar conta administrativa</a>
+        </p>
+      </section>
+
+      <section id="register-section" class="hidden">
+        <h2>Registrar Admin</h2>
+        <form id="admin-register-form" class="login-form">
+          <div class="form-group">
+            <label for="register-admin-email">Email:</label>
+            <input type="email" id="register-admin-email" placeholder="Email administrativo" required>
+          </div>
+          <div class="form-group">
+            <label for="register-admin-password">Senha:</label>
+            <input type="password" id="register-admin-password" placeholder="Senha" required>
+          </div>
+          <div class="form-group">
+            <label for="register-admin-password-confirm">Confirmar Senha:</label>
+            <input type="password" id="register-admin-password-confirm" placeholder="Confirmar senha" required>
+          </div>
+          <button type="submit" class="buy-button">Registrar</button>
+        </form>
+        <p style="margin-top:1rem; text-align:center;">
+          <a href="#" id="show-login">Voltar para login</a>
+        </p>
+      </section>
+    </div>
+
+    <section id="admin-dashboard" class="hidden">
+      <div id="product-form" class="hidden">
+        <div class="admin-toolbar">
+          <button type="button" id="export-products" class="secondary-button">Exportar Produtos</button>
+          <label for="import-products" class="secondary-button file-label">Importar Produtos</label>
+          <input type="file" id="import-products" accept="application/json" class="hidden-file-input">
+        </div>
+        <h2>Novo Produto</h2>
+        <form>
+          <div class="form-group">
+            <label for="product-group">Grupo:</label>
+            <select id="product-group" name="group">
+              <option value="">Selecione um grupo existente</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="new-group">Ou crie um novo grupo:</label>
+            <input type="text" id="new-group" placeholder="Nome do novo grupo">
+          </div>
+          
+          <div class="form-group">
+            <label for="product-name">Nome do Produto:</label>
+            <input type="text" id="product-name" name="name" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="product-price">Preço (R$):</label>
+            <input type="number" id="product-price" name="price" step="0.01" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="product-description">Descrição:</label>
+            <textarea id="product-description" name="description" required></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="product-images">Imagens:</label>
+            <input type="file" id="product-images" multiple accept="image/*">
+            <div id="image-preview" class="image-preview"></div>
+          </div>
+          
+          <button type="submit" class="buy-button">Adicionar Produto</button>
+        </form>
+      </div>
+
+      <div id="edit-product-modal" class="modal">
+        <div class="modal-content">
+          <span class="close-modal">&times;</span>
+          <h2>Editar Produto</h2>
+          <form id="edit-product-form">
+            <input type="hidden" name="productId">
+            
+            <div class="form-group">
+              <label for="edit-name">Nome:</label>
+              <input type="text" id="edit-name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="edit-price">Preço:</label>
+              <input type="number" id="edit-price" name="price" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="edit-description">Descrição:</label>
+              <textarea id="edit-description" name="description" required></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label for="edit-group">Grupo:</label>
+              <input type="text" id="edit-group" name="group" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Imagens Atuais:</label>
+              <div id="edit-image-preview" class="image-preview"></div>
+            </div>
+            
+            <div class="form-group">
+              <label for="edit-product-images">Adicionar Novas Imagens:</label>
+              <input type="file" id="edit-product-images" multiple accept="image/*">
+            </div>
+            
+            <button type="submit" class="buy-button">Salvar Alterações</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="dashboard-stats hidden">
+        <h2>Estatísticas</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Lucro Total</h3>
+            <p id="profit-display">R$ 0,00</p>
+          </div>
+          <div class="stat-card">
+            <h3>Interações</h3>
+            <p>Cliques: <span id="total-clicks">0</span></p>
+            <p>Visualizações: <span id="total-views">0</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-list hidden">
+        <h2>Produtos Cadastrados</h2>
+        <table id="product-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Grupo</th>
+              <th>Nome</th>
+              <th>Preço</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Produtos serão inseridos aqui via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-content">
+      <p>2025 Torres Materiais de Construção</p>
+      <p>R. Arcanjo Cândido da Silva, 3476 - Praia de Fora, Palhoça - SC, 88138-300</p>
+      <a href="https://www.google.com/maps?q=R.+Arcanjo+C%C3%A2ndido+da+Silva,+3476+-+Praia+de+Fora,+Palho%C3%A7a+-+SC,+88138-300" target="_blank" rel="noopener">
+        <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z" fill="#FFD700"/>
+        </svg>
+        Ver Localização
+      </a>
+    </div>
+  </footer>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
