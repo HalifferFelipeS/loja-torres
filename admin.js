@@ -2,7 +2,7 @@ import { getProducts, addProductToDB, deleteProductFromDB, calculateProfit } fro
 import { getInteractionStats } from './modules/adminStats.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Elementos
+    // --- ELEMENTOS ---
     const loginForm = document.getElementById('admin-login-form');
     const registerForm = document.getElementById('admin-register-form');
     const loginSection = document.getElementById('login-section');
@@ -12,20 +12,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const showLoginBtn = document.getElementById('show-login');
     const logoutBtn = document.getElementById('logout-button');
     
-    // Itens internos do painel
+    // Elementos internos que precisam aparecer
     const productForm = document.getElementById('product-form');
     const statsSection = document.querySelector('.dashboard-stats');
     const productListSection = document.querySelector('.product-list');
 
-    // Inicializa
     checkLoginStatus();
 
-    // --- Navegação ---
+    // --- NAVEGAÇÃO ---
     if(showRegisterBtn) showRegisterBtn.addEventListener('click', (e) => { e.preventDefault(); loginSection.classList.add('hidden'); registerSection.classList.remove('hidden'); });
     if(showLoginBtn) showLoginBtn.addEventListener('click', (e) => { e.preventDefault(); registerSection.classList.add('hidden'); loginSection.classList.remove('hidden'); });
-    if(logoutBtn) logoutBtn.addEventListener('click', (e) => { e.preventDefault(); localStorage.removeItem('adminLoggedIn'); window.location.reload(); });
+    
+    if(logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('adminLoggedIn');
+            window.location.reload();
+        });
+    }
 
-    // --- Login ---
+    // --- LOGIN (CONECTADO AO BANCO) ---
     if(loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -33,39 +39,49 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('admin-password').value;
             const btn = loginForm.querySelector('button');
             const originalText = btn.innerText;
+            
             btn.innerText = "Entrando..."; btn.disabled = true;
 
             try {
+                // Tenta conectar no Banco de Dados
                 const res = await fetch('/.netlify/functions/auth', {
                     method: 'POST',
                     body: JSON.stringify({ action: 'login', email, password })
                 });
-                
-                if(res.ok) {
+
+                if (res.ok) {
                     const data = await res.json();
-                    if(data.success) {
+                    if (data.success) {
                         localStorage.setItem('adminLoggedIn', 'true');
                         checkLoginStatus();
-                    } else { alert('Dados incorretos.'); }
+                    } else {
+                        alert('Dados incorretos.');
+                    }
                 } else {
-                    // Fallback para emergência
-                    if(email === 'halifferfromao@gmail.com' && password === '915273fefe') {
-                        alert('Modo Offline Ativado.');
+                    // MODO DE EMERGÊNCIA (Caso o banco falhe, deixa entrar com a senha mestra)
+                    if (email === 'halifferfromao@gmail.com' && password === '915273fefe') {
+                        alert('Aviso: Entrando em modo offline (Banco desconectado).');
                         localStorage.setItem('adminLoggedIn', 'true');
                         checkLoginStatus();
-                    } else { alert('Erro no servidor ao logar.'); }
+                    } else {
+                        alert('Erro ao conectar com o servidor.');
+                    }
                 }
-            } catch(err) {
-                if(email === 'halifferfromao@gmail.com' && password === '915273fefe') {
+            } catch (err) {
+                // Erro de rede? Tenta emergência
+                if (email === 'halifferfromao@gmail.com' && password === '915273fefe') {
                     localStorage.setItem('adminLoggedIn', 'true');
                     checkLoginStatus();
-                } else { alert('Erro de conexão.'); }
+                } else {
+                    alert('Erro de conexão.');
+                }
+            } finally {
+                btn.innerText = originalText; btn.disabled = false;
             }
-            btn.innerText = originalText; btn.disabled = false;
         });
     }
 
-    // --- Cadastro de Admin ---
+    // --- CADASTRO (CONECTADO AO BANCO) ---
     if(registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -73,29 +89,42 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('register-admin-password').value;
             const confirm = document.getElementById('register-admin-password-confirm').value;
 
-            if(password !== confirm) return alert('Senhas não conferem');
+            if (password !== confirm) return alert('Senhas não conferem');
 
-            const res = await fetch('/.netlify/functions/auth', {
-                method: 'POST',
-                body: JSON.stringify({ action: 'register', email, password })
-            });
-            if(res.ok) {
-                alert('Cadastrado! Faça login.');
-                registerSection.classList.add('hidden');
-                loginSection.classList.remove('hidden');
-            } else { alert('Erro ao cadastrar.'); }
+            const btn = registerForm.querySelector('button');
+            btn.innerText = "Criando..."; btn.disabled = true;
+
+            try {
+                const res = await fetch('/.netlify/functions/auth', {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'register', email, password })
+                });
+
+                if (res.ok) {
+                    alert('Admin criado! Faça login.');
+                    registerSection.classList.add('hidden');
+                    loginSection.classList.remove('hidden');
+                } else {
+                    alert('Erro: Talvez o email já exista.');
+                }
+            } catch (e) {
+                alert('Erro de conexão.');
+            } finally {
+                btn.innerText = "Registrar"; btn.disabled = false;
+            }
         });
     }
 
-    // --- Dashboard ---
+    // --- PAINEL ---
     function checkLoginStatus() {
         if(localStorage.getItem('adminLoggedIn') === 'true') {
             if(loginSection) loginSection.classList.add('hidden');
             if(registerSection) registerSection.classList.add('hidden');
+            
             if(dashboard) dashboard.classList.remove('hidden');
             if(logoutBtn) logoutBtn.classList.remove('hidden');
             
-            // Força exibir conteúdo interno
+            // Força exibir os itens internos
             if(productForm) productForm.classList.remove('hidden');
             if(statsSection) statsSection.classList.remove('hidden');
             if(productListSection) productListSection.classList.remove('hidden');
@@ -111,16 +140,17 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadDashboardData() {
         const products = await getProducts();
         renderTable(products);
+        updateGroupSelect(products); // Atualiza grupos
         
         const profit = await calculateProfit();
         const profitEl = document.getElementById('profit-display');
         if(profitEl) profitEl.innerText = `R$ ${profit.toFixed(2)}`;
 
         const stats = await getInteractionStats();
-        const clicksEl = document.getElementById('total-clicks');
-        const viewsEl = document.getElementById('total-views');
-        if(clicksEl) clicksEl.innerText = stats.clicks || 0;
-        if(viewsEl) viewsEl.innerText = stats.views || 0;
+        const clicks = document.getElementById('total-clicks');
+        const views = document.getElementById('total-views');
+        if(clicks) clicks.innerText = stats.clicks || 0;
+        if(views) views.innerText = stats.views || 0;
         
         setupProductForm();
     }
@@ -133,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${p.id}</td>
                 <td>${p.group || p.group_name || '-'}</td>
                 <td>${p.name}</td>
-                <td>R$ ${p.price.toFixed(2)}</td>
+                <td>R$ ${parseFloat(p.price).toFixed(2)}</td>
                 <td><button class="delete-button" data-id="${p.id}">Excluir</button></td>
             </tr>
         `).join('');
@@ -147,8 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-
-    // FUNÇÃO QUE CONVERTE IMAGEM PARA TEXTO (BASE64)
+    
     function fileToBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -161,15 +190,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupProductForm() {
         const form = document.querySelector('#product-form form');
         if(!form) return;
-        
         const newForm = form.cloneNode(true);
         form.parentNode.replaceChild(newForm, form);
-        updateGroupSelect();
+        
+        // Atualiza select ao carregar form
+        getProducts().then(updateGroupSelect);
 
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = newForm.querySelector('button');
-            const oldText = btn.innerText;
             btn.innerText = "Salvando..."; btn.disabled = true;
 
             try {
@@ -178,52 +207,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 const desc = document.getElementById('product-description').value;
                 const group = document.getElementById('new-group').value || document.getElementById('product-group').value || 'Geral';
                 
-                // Processamento das Imagens Reais
                 const imageInput = document.getElementById('product-images');
                 let images = [];
-                
                 if (imageInput.files.length > 0) {
-                    // Converte todos os arquivos selecionados
                     const promises = Array.from(imageInput.files).map(fileToBase64);
                     images = await Promise.all(promises);
                 } else {
-                    // Se não escolher imagem, usa placeholder
                     images = ['https://via.placeholder.com/150'];
                 }
 
-                const newProd = {
-                    id: Date.now().toString(),
-                    name,
-                    price,
-                    description: desc,
-                    group,
-                    images
-                };
-
-                // Enviando para o Banco
+                const newProd = { id: Date.now().toString(), name, price, description: desc, group, images };
                 await addProductToDB(newProd);
                 
-                alert('Produto Salvo com Sucesso!');
+                alert('Produto Salvo!');
                 newForm.reset();
-                document.getElementById('image-preview').innerHTML = ''; // Limpa preview se tiver
+                document.getElementById('image-preview').innerHTML = '';
                 loadDashboardData();
-                
             } catch (error) {
-                console.error(error);
-                // Mostra o erro real na tela para sabermos o que é
-                alert('Erro ao salvar: ' + error.message);
+                alert('Erro: ' + error.message);
             } finally {
-                btn.innerText = oldText; btn.disabled = false;
+                btn.innerText = "Adicionar Produto"; btn.disabled = false;
             }
         });
     }
 
-    async function updateGroupSelect() {
-        const products = await getProducts();
+    function updateGroupSelect(products) {
+        // Se products não for passado, ignora ou busca (já buscamos em loadDashboardData)
+        if(!products) return; 
         const groups = new Set(products.map(p => p.group || p.group_name));
         const select = document.getElementById('product-group');
         if(select) {
-            select.innerHTML = '<option value="">Selecione...</option>';
+            select.innerHTML = '<option value="">Selecione um grupo existente</option>';
             groups.forEach(g => { if(g) select.innerHTML += `<option value="${g}">${g}</option>`; });
         }
     }
