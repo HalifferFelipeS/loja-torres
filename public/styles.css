@@ -291,10 +291,10 @@ main {
 }
 
 .carousel-images img {
-  width: 100%; 
+  /* width: 100%; <--- REMOVA ESSA LINHA */
   height: 100%;
   object-fit: contain;
-  flex-shrink: 0; /* Impede a imagem de encolher */
+  flex-shrink: 0;
 }
 
 /* Botões de seta dentro do card */
