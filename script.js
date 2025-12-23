@@ -1,25 +1,21 @@
 // script.js
-import { getProducts, renderProducts } from './modules/product.js';
+import { getProducts, renderProducts as renderModule, getGroups } from './modules/product.js';
 import { incrementClicks, incrementViews } from './modules/adminStats.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1. Carrega produtos do Banco de Dados (espera chegar)
-  const products = await getProducts();
+  const products = await getProducts(); // Assume async se estiver usando DB
   
-  // 2. Renderiza na tela
-  renderProducts(products);
+  // Renderiza usando a nova lógica de slider
+  renderProductSliders(products);
   
-  // 3. Inicializa as funcionalidades passando os produtos já carregados
   initializeSearch(products);
   initializeSidebar(products);
 
-  // --- Eventos de Clique nos Produtos ---
   const productList = document.getElementById('product-list');
 
   productList.addEventListener('click', event => {
     if (event.target.classList.contains('buy-button')) {
       const productId = event.target.getAttribute('data-id');
-      // Comparação flexível (string vs number) para garantir que ache o ID
       const product = products.find(p => String(p.id) === String(productId));
       if (product) {
           redirectToWhatsApp(product);
@@ -27,220 +23,139 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
   });
-
-  productList.addEventListener('mouseover', event => {
-    if (event.target.closest('.product-card')) {
-      // incrementViews(); // Opcional: descomente para contar visualizações
-    }
-  });
 });
 
-function initializeSearch(allProducts) {
-  const searchContainer = document.getElementById('search-container');
-  const searchInput = document.getElementById('search-input');
-  const suggestionsList = document.getElementById('search-suggestions');
-  const filterSelect = document.getElementById('filter-select');
-  
-  if(!searchInput) return;
+// NOVA FUNÇÃO: Renderiza Carrosséis por Categoria
+function renderProductSliders(products) {
+  const productList = document.getElementById('product-list');
+  productList.innerHTML = '';
 
-  // Extrai grupos únicos dos produtos
-  const groups = new Set(allProducts.map(p => p.group || p.group_name)); // Suporta ambas nomenclaturas
-  
-  // Preenche o filtro principal
-  filterSelect.innerHTML = '<option value="">Todos os grupos</option>';
-  groups.forEach(group => {
-    if (group) {
-      filterSelect.innerHTML += `<option value="${group}">${group}</option>`;
-    }
+  const groupedProducts = {};
+  products.forEach(product => {
+    const groupName = product.group || product.group_name || 'Geral';
+    if (!groupedProducts[groupName]) groupedProducts[groupName] = [];
+    groupedProducts[groupName].push(product);
   });
 
-  let currentSuggestions = [];
-
-  function fuzzyMatch(str, pattern) {
-    if(!str) return false;
-    pattern = pattern.toLowerCase();
-    str = str.toLowerCase();
-    let patternIdx = 0;
-    let strIdx = 0;
-    while (patternIdx < pattern.length && strIdx < str.length) {
-      if (pattern[patternIdx] === str[strIdx]) patternIdx++;
-      strIdx++;
-    }
-    return patternIdx === pattern.length;
-  }
-
-  function updateSuggestions() {
-    const searchTerm = searchInput.value.toLowerCase();
-    const selectedGroup = filterSelect.value;
+  Object.entries(groupedProducts).forEach(([group, groupProducts]) => {
+    // Container Principal do Grupo
+    const groupSection = document.createElement('div');
+    groupSection.className = 'product-group';
     
-    // Filtra produtos
-    const filtered = allProducts.filter(product => {
-        const pGroup = product.group || product.group_name;
-        const matchesGroup = !selectedGroup || pGroup === selectedGroup;
-        const matchesSearch = !searchTerm || (
-            fuzzyMatch(product.name, searchTerm) || 
-            fuzzyMatch(product.description, searchTerm)
-        );
-        return matchesGroup && matchesSearch;
+    // Cabeçalho do Grupo
+    groupSection.innerHTML = `
+        <div class="group-header">
+            <h2 class="group-title">${group}</h2>
+        </div>
+    `;
+
+    // Wrapper do Slider
+    const sliderContainer = document.createElement('div');
+    sliderContainer.className = 'slider-container';
+
+    // Botão Anterior
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'slider-btn prev';
+    prevBtn.innerHTML = '&#10094;'; // Seta Esquerda
+    prevBtn.onclick = () => scrollSlider(gridDiv, -300);
+
+    // Botão Próximo
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'slider-btn next';
+    nextBtn.innerHTML = '&#10095;'; // Seta Direita
+    nextBtn.onclick = () => scrollSlider(gridDiv, 300);
+
+    // Grid de Produtos (Scrollável)
+    const gridDiv = document.createElement('div');
+    gridDiv.className = 'products-grid';
+
+    // Criação dos Cards
+    groupProducts.forEach(product => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      
+      // Imagem (Ainda é um carrossel interno se tiver varias fotos)
+      const carouselHTML = createCarouselHTML(product);
+      
+      card.innerHTML = `
+        ${carouselHTML}
+        <div class="product-info">
+          <p class="description">${product.description || ''}</p>
+          <h3>${product.name}</h3>
+          <p class="price">${parseFloat(product.price).toFixed(2)}</p>
+          <button class="buy-button" data-id="${product.id}">Adicionar ao Carrinho</button>
+        </div>
+      `;
+      gridDiv.appendChild(card);
+      // Inicializa carrossel de imagens interno do card
+      initializeCardCarousel(card, product.images.length);
     });
 
-    // Atualiza a grade de produtos na tela
-    renderProducts(filtered);
-
-    // Lógica das sugestões (dropdown)
-    if (!searchTerm) {
-      suggestionsList.style.display = 'none';
-      return;
+    // Monta a estrutura
+    if (groupProducts.length > 4) { // Só adiciona setas se tiver muitos produtos
+        sliderContainer.appendChild(prevBtn);
+        sliderContainer.appendChild(nextBtn);
     }
-
-    currentSuggestions = filtered.slice(0, 5);
-
-    if (currentSuggestions.length > 0) {
-      suggestionsList.innerHTML = currentSuggestions
-        .map((product, index) => `
-          <li class="suggestion-item" data-index="${index}">
-            <div class="suggestion-content">
-              <img src="${product.images && product.images[0] ? product.images[0] : 'https://via.placeholder.com/50'}" alt="${product.name}" class="suggestion-image">
-              <div class="suggestion-text">
-                <span class="suggestion-name">${product.name}</span>
-                <span class="suggestion-group">${product.group || product.group_name}</span>
-              </div>
-            </div>
-          </li>
-        `)
-        .join('');
-      suggestionsList.style.display = 'block';
-    } else {
-      suggestionsList.style.display = 'none';
-    }
-  }
-
-  searchInput.addEventListener('input', updateSuggestions);
-  filterSelect.addEventListener('change', updateSuggestions);
-
-  suggestionsList.addEventListener('click', (e) => {
-    const item = e.target.closest('.suggestion-item');
-    if (item) {
-      const index = parseInt(item.dataset.index);
-      const product = currentSuggestions[index];
-      searchInput.value = product.name;
-      suggestionsList.style.display = 'none';
-      renderProducts([product]);
-    }
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!searchContainer.contains(e.target)) {
-      suggestionsList.style.display = 'none';
-    }
+    sliderContainer.appendChild(gridDiv);
+    groupSection.appendChild(sliderContainer);
+    productList.appendChild(groupSection);
   });
 }
 
-// --- LÓGICA DA SIDEBAR CORRIGIDA ---
-function initializeSidebar(allProducts) {
-  const sidebarGroups = document.getElementById('sidebar-groups');
-  const sidebarFilter = document.getElementById('sidebar-filter-select');
-  const sidebarSearch = document.getElementById('sidebar-search-input');
-  
-  if(!sidebarGroups || !allProducts) return;
+function scrollSlider(element, amount) {
+    element.scrollBy({ left: amount, behavior: 'smooth' });
+}
 
-  // 1. Extrai grupos (usando os produtos já carregados)
-  const groups = Array.from(new Set(allProducts.map(p => p.group || p.group_name))).filter(Boolean);
-
-  // 2. Preenche o select da Sidebar
-  if(sidebarFilter) {
-      sidebarFilter.innerHTML = '<option value="">Todos os grupos</option>';
-      groups.forEach(g => {
-        sidebarFilter.innerHTML += `<option value="${g}">${g}</option>`;
-      });
-  }
-
-  // 3. Preenche a Lista de Links da Sidebar
-  sidebarGroups.innerHTML = groups.map(g => `
-    <a href="#" class="sidebar-group-item" data-group="${g}">${g}</a>
-  `).join('');
-
-  // 4. Clique no grupo -> Rola até a seção
-  sidebarGroups.addEventListener('click', (e) => {
-    const item = e.target.closest('.sidebar-group-item');
-    if (!item) return;
-    e.preventDefault();
-    const groupName = item.dataset.group;
+// Funções auxiliares mantidas (Carrossel de imagens interno)
+function createCarouselHTML(product) {
+    // Se não tiver imagem, usa placeholder
+    const images = product.images && product.images.length ? product.images : ['https://via.placeholder.com/150'];
     
-    // Procura o título do grupo na página
-    const headers = Array.from(document.querySelectorAll('.group-title'));
-    const header = headers.find(h => h.textContent.trim() === groupName);
+    return `
+    <div class="product-carousel" data-product-id="${product.id}">
+      <div class="carousel-images" style="width: ${images.length * 100}%">
+        ${images.map(url => `
+          <img src="${url}" alt="${product.name}" style="width: ${100 / images.length}%">
+        `).join('')}
+      </div>
+      ${images.length > 1 ? '<button class="carousel-button prev" style="left:5px">&lt;</button><button class="carousel-button next" style="right:5px">&gt;</button>' : ''}
+    </div>`;
+}
+
+function initializeCardCarousel(card, count) {
+    if(count <= 1) return;
+    const carousel = card.querySelector('.carousel-images');
+    const prev = card.querySelector('.carousel-button.prev');
+    const next = card.querySelector('.carousel-button.next');
+    let idx = 0;
     
-    if (header) {
-        // Rola com um desconto para não ficar escondido atrás do header fixo
-        const headerOffset = 100;
-        const elementPosition = header.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-      
-        window.scrollTo({
-            top: offsetPosition,
-            behavior: "smooth"
-        });
-    }
-  });
+    const update = () => carousel.style.transform = `translateX(-${idx * (100/count)}%)`;
+    
+    if(prev) prev.onclick = (e) => { e.stopPropagation(); idx = (idx - 1 + count) % count; update(); };
+    if(next) next.onclick = (e) => { e.stopPropagation(); idx = (idx + 1) % count; update(); };
+}
 
-  // 5. Sincronia: Sidebar -> Pesquisa Principal
-  // Quando digita na sidebar, joga o valor para o input principal e dispara o evento
-  if(sidebarSearch) {
-      sidebarSearch.addEventListener('input', () => {
-        const mainInput = document.getElementById('search-input');
-        if (mainInput) {
-          mainInput.value = sidebarSearch.value;
-          mainInput.dispatchEvent(new Event('input'));
-        }
-      });
-  }
+// ... Mantenha suas funções de initializeSearch e initializeSidebar aqui ...
+// Apenas lembre de remover a importação duplicada e usar o renderProductSliders na busca também
 
-  if(sidebarFilter) {
-      sidebarFilter.addEventListener('change', () => {
-        const mainFilter = document.getElementById('filter-select');
-        if (mainFilter) {
-          mainFilter.value = sidebarFilter.value;
-          mainFilter.dispatchEvent(new Event('change'));
-        }
-      });
-  }
-
-  // 6. Intersection Observer (Sublinhado Amarelo ao Rolar)
-  // Observa as seções de grupo para marcar qual está visível
-  const observerOptions = {
-    root: null,
-    rootMargin: '-20% 0px -60% 0px', // Área ativa no meio da tela
-    threshold: 0
-  };
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const groupTitle = entry.target.querySelector('.group-title');
-        const groupName = groupTitle?.textContent?.trim();
-        
-        if (groupName) {
-          // Remove active de todos
-          document.querySelectorAll('.sidebar-group-item.active').forEach(el => el.classList.remove('active'));
-          
-          // Adiciona active no correspondente (usando aspas duplas escapadas para evitar erro com espaços)
-          const match = document.querySelector(`.sidebar-group-item[data-group="${groupName}"]`);
-          if (match) match.classList.add('active');
-        }
-      }
+function initializeSearch(allProducts) {
+    const searchInput = document.getElementById('search-input');
+    const suggestionsList = document.getElementById('search-suggestions');
+    // ... (sua lógica de busca existente)
+    
+    searchInput.addEventListener('input', () => {
+        // ... lógica de filtro
+        // IMPORTANTE: Ao filtrar, chame renderProductSliders(filtered) em vez de renderProducts
     });
-  }, observerOptions);
+}
 
-  // Começa a observar todas as seções de produto criadas
-  setTimeout(() => {
-      document.querySelectorAll('.product-group').forEach(section => observer.observe(section));
-  }, 500); // Pequeno delay para garantir que o renderProducts terminou
+function initializeSidebar(allProducts) {
+    // ... (sua lógica de sidebar existente)
+    // Mantenha o sidebarGroups.innerHTML preenchendo a lista vertical
 }
 
 function redirectToWhatsApp(product) {
-  const message = encodeURIComponent(`Olá, estou interessado no produto: ${product.name} por R$ ${product.price.toFixed(2)}`);
-  const whatsappNumber = '+554832428800';
-  const url = `https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${message}`;
-  window.open(url, '_blank');
+  const message = encodeURIComponent(`Olá, vi no site e tenho interesse em: ${product.name} (R$ ${product.price.toFixed(2)})`);
+  const whatsappNumber = '554832428800'; // Sem +
+  window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
 }
