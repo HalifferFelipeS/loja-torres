@@ -55,17 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         checkLoginStatus();
                     } else { alert('Acesso Negado.'); }
                 } else {
-                    // Fallback para emergência
-                    if(email === 'halifferfromao@gmail.com' && password === '915273fefe') {
+                    if(email === 'admin@torres.com' && password === 'admin123') {
                         localStorage.setItem('adminLoggedIn', 'true');
                         checkLoginStatus();
-                    } else { alert('Erro de conexão.'); }
+                    } else { alert('Dados incorretos.'); }
                 }
             } catch(e) {
-                if(email === 'halifferfromao@gmail.com' && password === '915273fefe') {
-                    localStorage.setItem('adminLoggedIn', 'true');
-                    checkLoginStatus();
-                } else { alert('Erro de rede.'); }
+                console.error(e);
+                alert('Erro de conexão.');
             } finally {
                 btn.innerText = "Entrar"; btn.disabled = false;
             }
@@ -91,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Admin criado!');
                 registerSection.classList.add('hidden');
                 loginSection.classList.remove('hidden');
-            } else { alert('Erro ao criar admin.'); }
+            } else { alert('Erro ao criar admin. Tente outro email.'); }
         });
     }
 
@@ -100,16 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const isLogged = localStorage.getItem('adminLoggedIn') === 'true';
 
         if(isLogged) {
-            // Esconde Login e Mostra Dashboard
             loginSection.classList.add('hidden');
             registerSection.classList.add('hidden');
             dashboard.classList.remove('hidden');
             logoutBtn.classList.remove('hidden');
-            
-            // Carrega dados
             loadDashboardData();
         } else {
-            // Mostra Login e Esconde Dashboard
             loginSection.classList.remove('hidden');
             dashboard.classList.add('hidden');
             logoutBtn.classList.add('hidden');
@@ -129,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = document.querySelector('#product-table tbody');
         tbody.innerHTML = products.map(p => `
             <tr>
-                <td>${p.group || '-'}</td>
+                <td>${p.group || p.group_name || '-'}</td>
                 <td>${p.name}</td>
                 <td>R$ ${parseFloat(p.price).toFixed(2)}</td>
                 <td>
@@ -148,54 +141,64 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Função Inteligente: Comprime a imagem antes de salvar
-function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-                // Cria um Canvas para redimensionar
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                // Define tamanho máximo (ex: 800px) para não pesar no banco
-                const MAX_WIDTH = 800;
-                const MAX_HEIGHT = 800;
-                let width = img.width;
-                let height = img.height;
+    // --- FUNÇÃO NOVA: COMPRESSÃO DE IMAGEM ---
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const MAX_WIDTH = 800;
+                    const MAX_HEIGHT = 800;
+                    let width = img.width;
+                    let height = img.height;
 
-                if (width > height) {
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
+                    if (width > height) {
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    } else {
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
                     }
-                } else {
-                    if (height > MAX_HEIGHT) {
-                        width *= MAX_HEIGHT / height;
-                        height = MAX_HEIGHT;
-                    }
-                }
 
-                canvas.width = width;
-                canvas.height = height;
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                // Retorna a imagem leve (JPEG qualidade 0.7)
-                resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
             };
-        };
-        reader.onerror = error => reject(error);
-    });
-}
+            reader.onerror = error => reject(error);
+        });
+    }
 
     function setupProductForm() {
         const form = document.querySelector('#product-form form');
-        // Clone para limpar eventos antigos
         const newForm = form.cloneNode(true);
         form.parentNode.replaceChild(newForm, form);
+
+        // --- PREVIEW DAS IMAGENS (NOVIDADE) ---
+        const imageInput = newForm.querySelector('#product-images');
+        const previewDiv = document.getElementById('image-preview');
+        
+        imageInput.addEventListener('change', function() {
+            previewDiv.innerHTML = ''; // Limpa anteriores
+            Array.from(this.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.height = '60px';
+                    img.style.width = '60px';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '8px';
+                    img.style.border = '1px solid #ddd';
+                    previewDiv.appendChild(img);
+                }
+                reader.readAsDataURL(file);
+            });
+        });
 
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -208,13 +211,10 @@ function fileToBase64(file) {
                 const desc = document.getElementById('product-description').value;
                 const group = document.getElementById('new-group').value || document.getElementById('product-group').value || 'Geral';
                 
-                const imageInput = document.getElementById('product-images');
                 let images = [];
                 if(imageInput.files.length > 0) {
                     const promises = Array.from(imageInput.files).map(fileToBase64);
                     images = await Promise.all(promises);
-                } else {
-                    images = ['https://via.placeholder.com/150'];
                 }
 
                 const newProd = { id: Date.now().toString(), name, price, description: desc, group, images };
@@ -222,7 +222,7 @@ function fileToBase64(file) {
                 
                 alert('Produto Salvo!');
                 newForm.reset();
-                document.getElementById('image-preview').innerHTML = '';
+                previewDiv.innerHTML = '';
                 loadDashboardData();
             } catch(e) {
                 alert('Erro ao salvar: ' + e.message);
@@ -242,7 +242,6 @@ function fileToBase64(file) {
     async function updateStats() {
         const stats = await getInteractionStats();
         const profit = await calculateProfit();
-        
         document.getElementById('total-clicks').innerText = stats.clicks || 0;
         document.getElementById('total-views').innerText = stats.views || 0;
         document.getElementById('profit-display').innerText = `R$ ${profit.toFixed(2)}`;
