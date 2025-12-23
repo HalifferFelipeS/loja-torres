@@ -289,21 +289,25 @@ main {
   transition: transform 0.3s ease-in-out; /* Animação do slide */
 }
 
-/* CORREÇÃO DAS IMAGENS BRANCAS */
-.carousel-images img {
-  /* Força a imagem a ter o tamanho EXATO do cartão */
-  width: 240px !important; 
-  height: 100%;
-  object-fit: contain; /* Faz a imagem caber inteira sem cortar */
-  flex-shrink: 0;      /* Impede que a imagem amasse */
-  background-color: #fff; /* Garante fundo branco se a imagem for transparente PNG */
+/* CORREÇÃO VISUAL DAS IMAGENS */
+.product-carousel img, 
+.modal-carousel img {
+  width: 100% !important;   /* Ocupa a largura do cartão */
+  height: 100% !important;  /* Ocupa a altura definida (200px) */
+  object-fit: contain;      /* Garante que a foto apareça inteira */
+  background-color: #fff;   /* Fundo branco para imagens transparentes */
+  display: block;
+  margin: 0 auto;
 }
 
-/* Ajuste para Celular (para acompanhar o tamanho do card mobile) */
-@media (max-width: 768px) {
-  .carousel-images img {
-    width: 170px !important; /* Tamanho do card no celular */
-  }
+/* Garante que o container tenha tamanho fixo */
+.product-carousel {
+    height: 200px;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Botões de seta dentro do card */
