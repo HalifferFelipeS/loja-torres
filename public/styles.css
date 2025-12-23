@@ -377,3 +377,99 @@ footer {
   .modal-carousel { height: 250px; }
   .slider-btn { display: none; }
 }
+
+/* =========================================
+   ESTILOS DA TELA DE LOGIN ADMINISTRATIVO
+   ========================================= */
+
+/* Centraliza a seção de login na área principal */
+#login-section.active {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh; /* Ocupa a altura da tela para centralizar verticalmente */
+    background-color: #f8f9fa; /* Fundo levemente diferente pra destacar */
+}
+
+/* O título "Login Administrativo" */
+#login-section h2 {
+    margin-bottom: 2rem;
+    color: var(--dark-color);
+    font-size: 1.8rem;
+}
+
+/* O formulário em si (o "cartão" branco) */
+#login-form {
+    background-color: #ffffff;
+    padding: 3rem;
+    border-radius: 20px; /* Bordas bem arredondadas no cartão */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Sombra suave para dar profundidade */
+    width: 100%;
+    max-width: 450px; /* Largura máxima para não ficar esticado */
+}
+
+/* Ajuste dos grupos de formulário (label + input) */
+#login-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+/* Estilo das Labels (Email/Senha) */
+#login-form label {
+    display: block;
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-left: 10px; /* Alinha com o início arredondado do input */
+}
+
+/* --- Estilos dos Campos de Input (O que você pediu) --- */
+#login-form input[type="email"],
+#login-form input[type="password"] {
+    width: 100%;
+    padding: 1rem 1.5rem; /* Mais espaçamento interno para ficar "gordinho" */
+    
+    /* Borda arredondada estilo pílula */
+    border-radius: 50px; 
+    
+    /* Cor da borda padrão (suave) */
+    border: 2px solid #e9ecef;
+    
+    background-color: #f8f9fa;
+    font-size: 1rem;
+    transition: all 0.3s ease; /* Transição suave ao clicar */
+    outline: none; /* Remove a linha azul padrão feia do navegador */
+}
+
+/* Quando o usuário clica no campo (Foco) */
+#login-form input:focus {
+    /* Borda da cor do tema */
+    border-color: var(--primary-color);
+    background-color: #fff;
+    /* Um brilho suave da cor do tema */
+    box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.15);
+}
+
+/* --- Botão de Entrar --- */
+#login-form button[type="submit"] {
+    width: 100%;
+    padding: 1rem;
+    margin-top: 1rem;
+    
+    /* Botão também arredondado pra combinar */
+    border-radius: 50px;
+    
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, var(--primary-color), #357abd); /* Gradiente sutil */
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+    transition: transform 0.2s;
+}
+
+/* Efeito ao passar o mouse no botão */
+#login-form button[type="submit"]:hover {
+    transform: translateY(-2px); /* Levanta um pouquinho */
+    box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+}
