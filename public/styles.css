@@ -465,3 +465,191 @@ footer {
 .login-container a:hover {
     color: var(--primary-hover);
 }
+/* =========================================
+   ESTILOS DO PAINEL ADMIN (DASHBOARD)
+   ========================================= */
+
+/* Layout Geral do Dashboard */
+#admin-dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    animation: fadeIn 0.5s ease;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Coluna da esquerda maior que a direita */
+    gap: 2rem;
+}
+
+/* Estilo dos Cartões (Box Branco) */
+.admin-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    border: 1px solid #f0f0f0;
+    margin-bottom: 2rem;
+}
+
+.admin-card h2 {
+    font-size: 1.4rem;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--primary);
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
+/* --- Formulário de Produtos --- */
+#product-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+#product-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#product-form label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-left: 5px;
+}
+
+/* Inputs do Dashboard (Estilo Pílula Igual Login) */
+#product-form input[type="text"],
+#product-form input[type="number"],
+#product-form select,
+#product-form textarea {
+    width: 100%;
+    padding: 12px 20px;
+    border: 2px solid #e9ecef;
+    border-radius: 20px; /* Arredondado moderno */
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.3s;
+    background-color: #fafafa;
+    font-family: 'Inter', sans-serif;
+}
+
+#product-form input:focus,
+#product-form select:focus,
+#product-form textarea:focus {
+    border-color: var(--primary);
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.15);
+}
+
+/* Input de Arquivo (Foto) Customizado */
+#product-form input[type="file"] {
+    padding: 10px;
+    background: #fff;
+    border: 2px dashed #ccc;
+    cursor: pointer;
+}
+#product-form input[type="file"]:hover {
+    border-color: var(--primary);
+    background-color: #fffdf0;
+}
+
+/* Botão Salvar */
+#product-form button[type="submit"] {
+    margin-top: 10px;
+    border-radius: 30px;
+    font-size: 1rem;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* --- Tabela de Estoque --- */
+.product-list {
+    overflow: hidden; /* Para a borda arredondada funcionar na tabela */
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.95rem;
+}
+
+.admin-table thead {
+    background-color: var(--primary);
+    color: var(--text-on-primary);
+}
+
+.admin-table th, .admin-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.admin-table th {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+.admin-table tbody tr:hover {
+    background-color: #fffdf0; /* Amarelinho claro ao passar o mouse */
+}
+
+.action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.btn-delete {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+.btn-delete:hover {
+    background-color: #fca5a5;
+}
+
+/* --- Estatísticas (Painel Direito) --- */
+.stats-col .stat-item {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    margin-bottom: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.stats-col h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+}
+
+.stats-col p {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-dark);
+}
+
+.stats-col .highlight {
+    color: #27ae60; /* Verde Dinheiro */
+}
+
+/* Responsivo para Celular */
+@media (max-width: 900px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr; /* Vira uma coluna só */
+    }
+}
