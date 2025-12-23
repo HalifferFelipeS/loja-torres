@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if(password !== confirm) return alert('Senhas não batem.');
 
-            const res = await fetch('/.netlify/functions/auth', {
+            const res = await fetch('/api/auth', {
                 method: 'POST',
                 body: JSON.stringify({ action: 'register', email, password })
             });
