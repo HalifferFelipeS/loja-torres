@@ -67,7 +67,6 @@ header {
 .brand-text {
     display: flex;
     flex-direction: column;
-    cursor: pointer;
     user-select: none;
 }
 
