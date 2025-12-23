@@ -1,4 +1,6 @@
-/* --- Variáveis (Tema Amarelo & Profissional) --- */
+/* =========================================
+   VARIÁVEIS GERAIS & TEMA
+   ========================================= */
 :root {
   --primary: #FFD700;       /* AMARELO ORIGINAL */
   --primary-hover: #FFC107;
@@ -26,10 +28,12 @@ body {
   min-height: 100vh;
 }
 
-/* CLASSE UTILITÁRIA */
+/* Utilitários */
 .hidden { display: none !important; }
 
-/* --- Header --- */
+/* =========================================
+   HEADER (CABEÇALHO)
+   ========================================= */
 header {
   height: var(--header-height);
   background-color: var(--bg-white);
@@ -63,6 +67,7 @@ header {
 .brand-text {
     display: flex;
     flex-direction: column;
+    cursor: pointer;
     user-select: none;
 }
 
@@ -76,7 +81,7 @@ header {
   display: inline-block;
 }
 
-/* --- BOTÃO ADMIN SECRETO --- */
+/* Botão Admin Secreto */
 .admin-link {
     text-decoration: none;
     color: var(--text-light);
@@ -85,7 +90,7 @@ header {
     padding: 8px 15px;
     border-radius: 20px;
     transition: all 0.3s;
-    opacity: 0; /* Segredo: Invisível por padrão */
+    opacity: 0; /* Invisível por padrão */
     pointer-events: none;
 }
 
@@ -97,13 +102,14 @@ header {
     border-color: #000;
 }
 
-/* --- Layout --- */
+/* =========================================
+   LAYOUT PRINCIPAL & SIDEBAR
+   ========================================= */
 .layout-container {
   display: flex;
   flex: 1;
 }
 
-/* --- Sidebar Vertical --- */
 .sidebar {
   width: var(--sidebar-width);
   background-color: var(--bg-white);
@@ -162,14 +168,15 @@ header {
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* --- Conteúdo Principal --- */
 main {
   margin-left: var(--sidebar-width);
   padding: 2rem;
   width: calc(100% - var(--sidebar-width));
 }
 
-/* Busca Grande */
+/* =========================================
+   BUSCA PRINCIPAL
+   ========================================= */
 #search-container {
   max-width: 800px;
   margin: 0 auto 3rem;
@@ -200,7 +207,9 @@ main {
   color: var(--text-on-primary);
 }
 
-/* --- Sliders de Produtos --- */
+/* =========================================
+   GRUPOS DE PRODUTOS & SLIDER
+   ========================================= */
 .product-group {
   margin-bottom: 3rem;
   background: var(--bg-white);
@@ -237,82 +246,105 @@ main {
   scrollbar-width: thin;
 }
 
-/* Botões do Slider */
-.slider-btn {
-  background: var(--bg-white);
-  border: 1px solid var(--border-color);
-  width: 40px; height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  position: absolute;
-  z-index: 2;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-.slider-btn:hover { background: var(--primary); border-color: var(--primary); }
-.slider-btn.prev { left: -20px; }
-.slider-btn.next { right: -20px; }
-
-/* --- Card de Produto --- */
+/* =========================================
+   CARTÃO DE PRODUTO (CORRIGIDO TAMANHO & CARROSSEL)
+   ========================================= */
 .product-card {
-  min-width: 250px;
-  max-width: 250px;
+  width: 240px;          /* TAMANHO FIXO IMPORTANTE */
+  min-width: 240px;      /* Impede encolher */
+  max-width: 240px;      /* Impede esticar */
+  
   background: var(--bg-white);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
+  border: 1px solid #eee;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
+  flex-shrink: 0;        /* Impede amassar no slider */
+  margin-bottom: 5px;
 }
 
 .product-card:hover {
   transform: translateY(-5px);
-  border-color: var(--primary);
   box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  border-color: var(--primary);
 }
 
+/* Área do Carrossel (Foto) */
 .product-carousel {
-  height: 220px;
+  height: 200px;
   width: 100%;
-  padding: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
+  overflow: hidden; /* Esconde as outras fotos do lado */
+  border-radius: 12px 12px 0 0;
   background: #fff;
-  cursor: pointer;
   border-bottom: 1px solid #f9f9f9;
+  cursor: pointer;
+}
+
+/* Container das imagens que desliza */
+.carousel-images {
+  display: flex;
+  height: 100%;
+  transition: transform 0.3s ease-in-out; /* Animação do slide */
 }
 
 .carousel-images img {
-  max-height: 190px;
-  max-width: 100%;
+  width: 100%; 
+  height: 100%;
   object-fit: contain;
+  flex-shrink: 0; /* Impede a imagem de encolher */
 }
 
+/* Botões de seta dentro do card */
+.product-card .slider-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 25px; height: 25px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid #ddd;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0.7;
+}
+.product-card .slider-btn:hover {
+  opacity: 1;
+  background: var(--primary);
+}
+
+/* Informações do Produto */
 .product-info {
   padding: 1rem;
-  flex: 1;
   display: flex;
   flex-direction: column;
+  flex: 1;
+  gap: 8px;
 }
 
 .product-info h3 {
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
-  height: 40px;
+  font-size: 0.95rem;
+  color: #333;
+  line-height: 1.4;
+  height: 2.8em;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  margin: 0;
 }
 
-.price {
-  font-size: 1.5rem;
+.product-info .price {
+  font-size: 1.3rem;
   font-weight: 800;
   color: var(--text-dark);
-  margin-bottom: 10px;
+  margin: 0;
 }
 
 .buy-button {
@@ -321,11 +353,11 @@ main {
   color: var(--text-on-primary);
   font-weight: 700;
   border: none;
-  padding: 12px;
-  border-radius: 4px;
+  padding: 10px;
+  border-radius: 6px;
   cursor: pointer;
   text-transform: uppercase;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   transition: 0.2s;
   margin-top: auto;
 }
@@ -334,7 +366,9 @@ main {
   box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4);
 }
 
-/* --- FOOTER --- */
+/* =========================================
+   FOOTER (RODAPÉ)
+   ========================================= */
 footer {
   background-color: #222;
   padding: 3rem 2rem;
@@ -352,7 +386,9 @@ footer {
     gap: 10px;
 }
 
-/* Modal */
+/* =========================================
+   MODAL DE DETALHES
+   ========================================= */
 .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
 .modal-content { background: #fff; width: 90%; max-width: 800px; max-height: 90vh; border-radius: 12px; display: flex; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden; }
 .modal-close { position: absolute; top: 15px; right: 15px; background: #f0f0f0; border: none; font-size: 1.5rem; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; z-index: 10; }
@@ -363,21 +399,9 @@ footer {
 .modal-details .price { font-size: 2rem; color: var(--primary); margin-bottom: 1.5rem; font-weight: 800; }
 .modal-details p { line-height: 1.6; color: #666; font-size: 1rem; }
 
-/* Responsivo */
-@media (max-width: 768px) {
-  .sidebar { display: none; }
-  main { margin-left: 0; width: 100%; padding: 1rem; }
-  footer { margin-left: 0; }
-  .modal-content { flex-direction: column; overflow-y: auto; }
-  .modal-carousel { height: 250px; }
-  .slider-btn { display: none; }
-}
-
 /* =========================================
-   ESTILOS DA TELA DE LOGIN ADMINISTRATIVO (CORRIGIDO)
+   TELA DE LOGIN ADMIN & REGISTRO
    ========================================= */
-
-/* Centraliza o container principal do login */
 #login-section, #register-section {
     display: flex;
     flex-direction: column;
@@ -385,7 +409,6 @@ footer {
     align-items: center;
     min-height: 60vh;
     padding: 2rem;
-    background-color: transparent;
 }
 
 #login-section h2, #register-section h2 {
@@ -395,12 +418,11 @@ footer {
     font-weight: 800;
 }
 
-/* Aplica o estilo de cartão ao formulário */
 #admin-login-form, #admin-register-form {
     background-color: #ffffff;
     padding: 2.5rem;
     border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); /* Sombra elegante */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     border: 1px solid #f0f0f0;
     width: 100%;
     max-width: 420px;
@@ -409,7 +431,6 @@ footer {
     gap: 1.2rem;
 }
 
-/* Labels */
 #admin-login-form label, #admin-register-form label {
     display: block;
     margin-bottom: 0.5rem;
@@ -419,11 +440,10 @@ footer {
     margin-left: 5px;
 }
 
-/* Inputs arredondados (Pílula) */
 #admin-login-form input, #admin-register-form input {
     width: 100%;
     padding: 14px 20px;
-    border-radius: 50px; /* Bem redondo */
+    border-radius: 50px; /* Redondo (Pílula) */
     border: 2px solid #e5e5e5;
     background-color: #fafafa;
     font-size: 1rem;
@@ -431,17 +451,15 @@ footer {
     transition: all 0.3s ease;
 }
 
-/* Efeito ao clicar no input */
 #admin-login-form input:focus, #admin-register-form input:focus {
     border-color: var(--primary);
     background-color: #fff;
-    box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.2); /* Brilho amarelo */
+    box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.2);
 }
 
-/* Botão de Entrar */
 #admin-login-form button, #admin-register-form button {
     margin-top: 1rem;
-    border-radius: 50px; /* Botão redondo também */
+    border-radius: 50px;
     padding: 14px;
     font-size: 1rem;
     letter-spacing: 1px;
@@ -449,26 +467,9 @@ footer {
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-/* Links abaixo do form */
-.login-container p {
-    text-align: center;
-    margin-top: 1rem;
-}
-
-/* Links (Cadastrar/Esqueci senha) */
-.login-container a {
-    color: var(--text-light);
-    font-size: 0.9rem;
-    text-decoration: underline;
-}
-.login-container a:hover {
-    color: var(--primary-hover);
-}
 /* =========================================
-   ESTILOS DO PAINEL ADMIN (DASHBOARD)
+   PAINEL ADMIN (DASHBOARD)
    ========================================= */
-
-/* Layout Geral do Dashboard */
 #admin-dashboard {
     max-width: 1200px;
     margin: 0 auto;
@@ -478,11 +479,10 @@ footer {
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr; /* Coluna da esquerda maior que a direita */
+    grid-template-columns: 2fr 1fr;
     gap: 2rem;
 }
 
-/* Estilo dos Cartões (Box Branco) */
 .admin-card {
     background: #fff;
     border-radius: 16px;
@@ -501,27 +501,11 @@ footer {
     padding-bottom: 5px;
 }
 
-/* --- Formulário de Produtos --- */
-#product-form form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-}
+/* Formulários do Dashboard */
+#product-form form { display: flex; flex-direction: column; gap: 1.2rem; }
+#product-form .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+#product-form label { font-weight: 600; font-size: 0.9rem; color: var(--text-light); margin-left: 5px; }
 
-#product-form .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-#product-form label {
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: var(--text-light);
-    margin-left: 5px;
-}
-
-/* Inputs do Dashboard (Estilo Pílula Igual Login) */
 #product-form input[type="text"],
 #product-form input[type="number"],
 #product-form select,
@@ -529,7 +513,7 @@ footer {
     width: 100%;
     padding: 12px 20px;
     border: 2px solid #e9ecef;
-    border-radius: 20px; /* Arredondado moderno */
+    border-radius: 20px;
     font-size: 0.95rem;
     outline: none;
     transition: all 0.3s;
@@ -537,27 +521,19 @@ footer {
     font-family: 'Inter', sans-serif;
 }
 
-#product-form input:focus,
-#product-form select:focus,
-#product-form textarea:focus {
+#product-form input:focus, #product-form select:focus, #product-form textarea:focus {
     border-color: var(--primary);
     background-color: #fff;
     box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.15);
 }
 
-/* Input de Arquivo (Foto) Customizado */
 #product-form input[type="file"] {
     padding: 10px;
     background: #fff;
     border: 2px dashed #ccc;
     cursor: pointer;
 }
-#product-form input[type="file"]:hover {
-    border-color: var(--primary);
-    background-color: #fffdf0;
-}
 
-/* Botão Salvar */
 #product-form button[type="submit"] {
     margin-top: 10px;
     border-radius: 30px;
@@ -566,59 +542,21 @@ footer {
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-/* --- Tabela de Estoque --- */
-.product-list {
-    overflow: hidden; /* Para a borda arredondada funcionar na tabela */
-}
-
+/* Tabela */
 .admin-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 1rem;
     font-size: 0.95rem;
 }
+.admin-table thead { background-color: var(--primary); color: var(--text-on-primary); }
+.admin-table th, .admin-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+.admin-table tbody tr:hover { background-color: #fffdf0; }
 
-.admin-table thead {
-    background-color: var(--primary);
-    color: var(--text-on-primary);
-}
+.action-btn { padding: 6px 12px; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 600; }
+.btn-delete { background-color: #fee2e2; color: #dc2626; }
 
-.admin-table th, .admin-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-}
-
-.admin-table th {
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.5px;
-}
-
-.admin-table tbody tr:hover {
-    background-color: #fffdf0; /* Amarelinho claro ao passar o mouse */
-}
-
-.action-btn {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.2s;
-}
-
-.btn-delete {
-    background-color: #fee2e2;
-    color: #dc2626;
-}
-.btn-delete:hover {
-    background-color: #fca5a5;
-}
-
-/* --- Estatísticas (Painel Direito) --- */
+/* Stats */
 .stats-col .stat-item {
     background: #fff;
     padding: 1.5rem;
@@ -628,27 +566,30 @@ footer {
     text-align: center;
     box-shadow: 0 2px 10px rgba(0,0,0,0.03);
 }
+.stats-col p { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); }
+.stats-col .highlight { color: #27ae60; }
 
-.stats-col h3 {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    color: var(--text-light);
-    margin-bottom: 0.5rem;
-}
-
-.stats-col p {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--text-dark);
-}
-
-.stats-col .highlight {
-    color: #27ae60; /* Verde Dinheiro */
-}
-
-/* Responsivo para Celular */
+/* =========================================
+   RESPONSIVO (MOBILE)
+   ========================================= */
 @media (max-width: 900px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr; /* Vira uma coluna só */
-    }
+    .dashboard-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  main { margin-left: 0; width: 100%; padding: 1rem; }
+  footer { margin-left: 0; }
+  .modal-content { flex-direction: column; overflow-y: auto; }
+  .modal-carousel { height: 250px; }
+  
+  /* Ajuste do Card no Celular */
+  .product-card {
+    width: 170px;
+    min-width: 170px;
+    max-width: 170px;
+  }
+  .product-carousel { height: 150px; }
+  .product-info h3 { font-size: 0.8rem; }
+  .product-info .price { font-size: 1.1rem; }
 }
