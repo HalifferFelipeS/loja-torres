@@ -8,36 +8,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   initializeSidebar(products);
   initializeSearch(products);
   setupGlobalClicks(products);
-  
-  // --- SEGREDO DO ADMIN ---
   setupAdminSecret();
 });
 
-// FUNÇÃO MÁGICA: 3 Cliques para mostrar admin
-function setupAdminSecret() {
-    const brandTitle = document.getElementById('brand-title-trigger');
-    const adminBtn = document.getElementById('admin-secret-btn');
-    let clicks = 0;
-    let timer;
-
-    if(brandTitle && adminBtn) {
-        brandTitle.addEventListener('click', () => {
-            clicks++;
-            
-            // Se passar 1 segundo sem clicar, reseta a contagem
-            clearTimeout(timer);
-            timer = setTimeout(() => { clicks = 0; }, 1000);
-
-            if(clicks === 3) {
-                // Revela o botão
-                adminBtn.classList.add('revealed');
-                alert('Modo Administrador Revelado!');
-                clicks = 0;
-            }
-        });
-    }
-}
-
+// --- RENDERIZA OS SLIDERS DA PÁGINA PRINCIPAL ---
 function renderProductSliders(products) {
   const productList = document.getElementById('product-list');
   productList.innerHTML = '';
@@ -50,12 +24,11 @@ function renderProductSliders(products) {
   });
 
   Object.entries(groupedProducts).forEach(([group, groupProducts]) => {
-    // Cria um ID limpo para o grupo (sem espaços, minúsculo)
     const groupId = `group-${group.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
 
     const groupSection = document.createElement('div');
     groupSection.className = 'product-group';
-    groupSection.id = groupId; // Importante para o scroll da sidebar
+    groupSection.id = groupId;
     
     groupSection.innerHTML = `
         <div class="group-header">
@@ -66,10 +39,10 @@ function renderProductSliders(products) {
     const sliderContainer = document.createElement('div');
     sliderContainer.className = 'slider-container';
 
+    // Setas do grupo de produtos
     const prevBtn = document.createElement('button');
     prevBtn.className = 'slider-btn prev';
     prevBtn.innerHTML = '&#10094;';
-    
     const nextBtn = document.createElement('button');
     nextBtn.className = 'slider-btn next';
     nextBtn.innerHTML = '&#10095;';
@@ -84,12 +57,29 @@ function renderProductSliders(products) {
       const card = document.createElement('div');
       card.className = 'product-card';
       
+      // Lógica do Carrossel Pequeno (Card)
       const images = product.images && product.images.length ? product.images : ['https://via.placeholder.com/150'];
-      const mainImage = images[0];
+      const hasMultiple = images.length > 1;
+      
+      let imagesHTML = `<div class="carousel-images" style="width: ${images.length * 100}%;">`;
+      images.forEach(img => {
+          imagesHTML += `<img src="${img}" alt="${product.name}" style="width: ${100/images.length}%">`;
+      });
+      imagesHTML += `</div>`;
+
+      // Setas internas do cartão
+      let controlsHTML = '';
+      if(hasMultiple) {
+          controlsHTML = `
+            <div class="slider-btn prev" data-action="prev" style="left: 5px;">&lt;</div>
+            <div class="slider-btn next" data-action="next" style="right: 5px;">&gt;</div>
+          `;
+      }
 
       card.innerHTML = `
-        <div class="product-carousel" data-id="${product.id}">
-             <img src="${mainImage}" alt="${product.name}">
+        <div class="product-carousel" data-id="${product.id}" data-total="${images.length}">
+             ${imagesHTML}
+             ${controlsHTML}
         </div>
         <div class="product-info">
           <h3>${product.name}</h3>
@@ -109,119 +99,44 @@ function renderProductSliders(products) {
     productList.appendChild(groupSection);
   });
 
-  // Inicia o observador de scroll APÓS renderizar os produtos
   setupScrollObserver();
+  setupCardCarouselEvents(); // Ativa as setas dos cartões
 }
 
-// --- SIDEBAR COM FILTRO E SCROLL ---
-function initializeSidebar(products) {
-    const sidebarGroups = document.getElementById('sidebar-groups');
-    const filterInput = document.getElementById('sidebar-search-input');
-    
-    if(!sidebarGroups) return;
+// --- CONTROLE DOS CARROSSEIS PEQUENOS (CARDS) ---
+function setupCardCarouselEvents() {
+    document.querySelectorAll('.product-carousel').forEach(carousel => {
+        const track = carousel.querySelector('.carousel-images');
+        const total = parseInt(carousel.getAttribute('data-total'));
+        let current = 0;
 
-    // Grupos únicos
-    const groups = Array.from(new Set(products.map(p => p.group || p.group_name))).filter(Boolean);
-    
-    // Renderiza lista
-    const renderList = () => {
-        sidebarGroups.innerHTML = groups.map(g => {
-            const groupId = `group-${g.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
-            return `<a href="#" class="sidebar-group-item" data-target="${groupId}">${g}</a>`;
-        }).join('');
-        
-        // Reconecta eventos de clique
-        addSidebarClickEvents();
-    };
-    renderList();
-
-    // Lógica de Filtro da Sidebar
-    if(filterInput) {
-        filterInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const items = sidebarGroups.querySelectorAll('.sidebar-group-item');
-            
-            items.forEach(item => {
-                const text = item.textContent.toLowerCase();
-                if(text.includes(term)) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
+        carousel.querySelectorAll('.slider-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Não abre o modal
+                const action = btn.getAttribute('data-action');
+                
+                if(action === 'next') current = (current + 1) % total;
+                else current = (current - 1 + total) % total;
+                
+                track.style.transform = `translateX(-${current * (100 / total)}%)`;
             });
         });
-    }
-}
-
-function addSidebarClickEvents() {
-    document.querySelectorAll('.sidebar-group-item').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetId = e.target.getAttribute('data-target');
-            const element = document.getElementById(targetId);
-            if(element) {
-                const headerOffset = 90;
-                const elementPosition = element.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-            }
-        });
     });
 }
 
-// --- OBSERVER (Deixa amarelo na sidebar quando rola a tela) ---
-function setupScrollObserver() {
-    const observerOptions = {
-        root: null,
-        rootMargin: '-20% 0px -60% 0px', // Área ativa no meio da tela
-        threshold: 0
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                // Remove active de todos
-                document.querySelectorAll('.sidebar-group-item.active').forEach(el => el.classList.remove('active'));
-                
-                // Pega o ID da seção visível
-                const sectionId = entry.target.id;
-                
-                // Acha o link correspondente na sidebar e marca
-                const activeLink = document.querySelector(`.sidebar-group-item[data-target="${sectionId}"]`);
-                if(activeLink) activeLink.classList.add('active');
-            }
-        });
-    }, observerOptions);
-
-    // Observa todas as seções de grupo criadas
-    document.querySelectorAll('.product-group').forEach(section => observer.observe(section));
-}
-
-function initializeSearch(allProducts) {
-    const searchInput = document.getElementById('search-input');
-    searchInput.addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase();
-        if(!term) {
-            renderProductSliders(allProducts);
-            return;
-        }
-        const filtered = allProducts.filter(p => 
-            p.name.toLowerCase().includes(term) || 
-            (p.description && p.description.toLowerCase().includes(term))
-        );
-        renderProductSliders(filtered);
-    });
-}
-
+// --- MODAL COM CARROSSEL GRANDE ---
 function setupGlobalClicks(products) {
-    const productList = document.getElementById('product-list');
-    
+    // Cria o HTML do modal se não existir
     if (!document.getElementById('product-modal')) {
         const modalHTML = `
         <div id="product-modal" class="modal">
             <div class="modal-content">
                 <button class="modal-close">&times;</button>
-                <div class="modal-carousel"><img class="modal-image" src=""></div>
+                <div class="modal-carousel">
+                    <button class="modal-btn prev hidden">&lt;</button>
+                    <img class="modal-image" src="">
+                    <button class="modal-btn next hidden">&gt;</button>
+                </div>
                 <div class="modal-details"></div>
             </div>
         </div>`;
@@ -231,32 +146,73 @@ function setupGlobalClicks(products) {
     const modal = document.getElementById('product-modal');
     const modalImg = modal.querySelector('.modal-image');
     const modalDetails = modal.querySelector('.modal-details');
-    const closeModal = modal.querySelector('.modal-close');
+    const prevBtn = modal.querySelector('.modal-btn.prev');
+    const nextBtn = modal.querySelector('.modal-btn.next');
+    
+    // Variáveis de estado do modal
+    let currentModalImages = [];
+    let currentModalIndex = 0;
 
-    closeModal.onclick = () => modal.style.display = 'none';
+    // Fechar modal
+    modal.querySelector('.modal-close').onclick = () => modal.style.display = 'none';
     modal.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; }
 
-    productList.addEventListener('click', (e) => {
+    // Função para atualizar imagem do modal
+    const updateModalImage = () => {
+        modalImg.src = currentModalImages[currentModalIndex];
+    };
+
+    // Cliques nas setas do modal
+    prevBtn.onclick = () => {
+        currentModalIndex = (currentModalIndex - 1 + currentModalImages.length) % currentModalImages.length;
+        updateModalImage();
+    };
+    nextBtn.onclick = () => {
+        currentModalIndex = (currentModalIndex + 1) % currentModalImages.length;
+        updateModalImage();
+    };
+
+    // Clique Global (Delegação de Eventos)
+    document.getElementById('product-list').addEventListener('click', (e) => {
         const target = e.target;
+        
+        // Botão de WhatsApp
         if (target.classList.contains('buy-button')) {
             const id = target.getAttribute('data-id');
             const product = products.find(p => String(p.id) === String(id));
             if(product) redirectToWhatsApp(product);
+            return;
         }
 
+        // Clique na imagem (abre modal)
         const carouselClick = target.closest('.product-carousel');
-        if (carouselClick) {
+        if (carouselClick && !target.classList.contains('slider-btn')) {
             const id = carouselClick.getAttribute('data-id');
             const product = products.find(p => String(p.id) === String(id));
+            
             if(product) {
-                const imgUrl = (product.images && product.images.length) ? product.images[0] : 'https://via.placeholder.com/150';
-                modalImg.src = imgUrl;
+                // Configura as imagens
+                currentModalImages = (product.images && product.images.length) ? product.images : ['https://via.placeholder.com/150'];
+                currentModalIndex = 0;
+                
+                // Mostra/Esconde setas dependendo da qtd
+                if(currentModalImages.length > 1) {
+                    prevBtn.classList.remove('hidden');
+                    nextBtn.classList.remove('hidden');
+                } else {
+                    prevBtn.classList.add('hidden');
+                    nextBtn.classList.add('hidden');
+                }
+
+                updateModalImage();
+                
                 modalDetails.innerHTML = `
                     <h3>${product.name}</h3>
                     <p class="price">R$ ${parseFloat(product.price).toFixed(2)}</p>
                     <p>${product.description || 'Sem descrição.'}</p>
                     <button class="buy-button" onclick="window.open('https://wa.me/554832428800?text=Interesse em ${encodeURIComponent(product.name)}', '_blank')">Pedir no WhatsApp</button>
                 `;
+                
                 modal.style.display = 'flex';
                 incrementClicks();
             }
@@ -266,6 +222,78 @@ function setupGlobalClicks(products) {
 
 function redirectToWhatsApp(product) {
   const message = encodeURIComponent(`Olá, vi no site e tenho interesse em: ${product.name} (R$ ${product.price.toFixed(2)})`);
-  const whatsappNumber = '554832428800'; 
-  window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
+  window.open(`https://wa.me/554832428800?text=${message}`, '_blank');
+}
+
+// --- SIDEBAR E OUTROS ---
+function initializeSidebar(products) {
+    const sidebarGroups = document.getElementById('sidebar-groups');
+    const filterInput = document.getElementById('sidebar-search-input');
+    if(!sidebarGroups) return;
+    const groups = Array.from(new Set(products.map(p => p.group || p.group_name))).filter(Boolean);
+    sidebarGroups.innerHTML = groups.map(g => {
+        const groupId = `group-${g.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
+        return `<a href="#" class="sidebar-group-item" data-target="${groupId}">${g}</a>`;
+    }).join('');
+    
+    document.querySelectorAll('.sidebar-group-item').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = e.target.getAttribute('data-target');
+            const element = document.getElementById(targetId);
+            if(element) {
+                const offsetPosition = element.getBoundingClientRect().top + window.pageYOffset - 90;
+                window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+            }
+        });
+    });
+
+    if(filterInput) {
+        filterInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            sidebarGroups.querySelectorAll('.sidebar-group-item').forEach(item => {
+                item.style.display = item.textContent.toLowerCase().includes(term) ? 'block' : 'none';
+            });
+        });
+    }
+}
+
+function setupScrollObserver() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                document.querySelectorAll('.sidebar-group-item.active').forEach(el => el.classList.remove('active'));
+                const activeLink = document.querySelector(`.sidebar-group-item[data-target="${entry.target.id}"]`);
+                if(activeLink) activeLink.classList.add('active');
+            }
+        });
+    }, { rootMargin: '-20% 0px -60% 0px' });
+    document.querySelectorAll('.product-group').forEach(section => observer.observe(section));
+}
+
+function initializeSearch(allProducts) {
+    document.getElementById('search-input').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        if(!term) { renderProductSliders(allProducts); return; }
+        const filtered = allProducts.filter(p => p.name.toLowerCase().includes(term));
+        renderProductSliders(filtered);
+    });
+}
+
+function setupAdminSecret() {
+    const brandTitle = document.getElementById('brand-title-trigger');
+    const adminBtn = document.getElementById('admin-secret-btn');
+    let clicks = 0; let timer;
+    if(brandTitle && adminBtn) {
+        brandTitle.addEventListener('click', () => {
+            clicks++;
+            clearTimeout(timer);
+            timer = setTimeout(() => { clicks = 0; }, 1000);
+            if(clicks === 3) {
+                adminBtn.classList.add('revealed');
+                alert('Modo Administrador Revelado!');
+                clicks = 0;
+            }
+        });
+    }
 }
