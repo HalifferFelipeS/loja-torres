@@ -289,11 +289,21 @@ main {
   transition: transform 0.3s ease-in-out; /* Animação do slide */
 }
 
+/* CORREÇÃO DAS IMAGENS BRANCAS */
 .carousel-images img {
-  /* width: 100%; <--- REMOVA ESSA LINHA */
+  /* Força a imagem a ter o tamanho EXATO do cartão */
+  width: 240px !important; 
   height: 100%;
-  object-fit: contain;
-  flex-shrink: 0;
+  object-fit: contain; /* Faz a imagem caber inteira sem cortar */
+  flex-shrink: 0;      /* Impede que a imagem amasse */
+  background-color: #fff; /* Garante fundo branco se a imagem for transparente PNG */
+}
+
+/* Ajuste para Celular (para acompanhar o tamanho do card mobile) */
+@media (max-width: 768px) {
+  .carousel-images img {
+    width: 170px !important; /* Tamanho do card no celular */
+  }
 }
 
 /* Botões de seta dentro do card */
