@@ -5,7 +5,8 @@ export async function getProducts() {
 }
 
 export async function addProductToDB(product) {
-  const res = await fetch('/.netlify/functions/products', {
+  // MUDANÇA AQUI: De /.netlify/functions/products para /api/products
+  const res = await fetch('/api/products', {
     method: 'POST',
     body: JSON.stringify(product),
     headers: { 'Content-Type': 'application/json' }
@@ -26,7 +27,8 @@ export async function addProductToDB(product) {
 }
 
 export async function deleteProductFromDB(id) {
-  const res = await fetch('/.netlify/functions/products', {
+  // MUDANÇA AQUI
+  const res = await fetch('/api/products', {
     method: 'DELETE',
     body: JSON.stringify({ id }),
     headers: { 'Content-Type': 'application/json' }

@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 // Tenta conectar no Banco
-                const res = await fetch('/.netlify/functions/auth', {
+                const res = await fetch('/api/auth', {
                     method: 'POST',
                     body: JSON.stringify({ action: 'login', email, password })
                 });
