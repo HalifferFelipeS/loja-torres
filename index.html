@@ -1,61 +1,80 @@
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Torres Materiais de Construção</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <header>
     <div class="header-content">
-      <h1>Torres Materiais de Construção</h1>
+      <div class="logo-area">
+        <img src="Logo.png" alt="Torres Materiais" class="header-logo">
+        <div class="brand-text">
+          <h1>TORRES</h1>
+          <span>MATERIAIS DE CONSTRUÇÃO</span>
+        </div>
+      </div>
       <nav>
         <a href="admin.html" id="admin-button">Admin</a>
       </nav>
     </div>
   </header>
 
-  <!-- Sidebar summary with search and groups -->
   <aside id="sidebar-summary" class="sidebar">
     <div class="sidebar-inner">
+      <div class="sidebar-header">
+        <h3>Categorias</h3>
+      </div>
+      
       <div class="sidebar-search">
-        <input type="text" id="sidebar-search-input" placeholder="Pesquisar produtos...">
+        <div class="input-wrapper">
+          <input type="text" id="sidebar-search-input" placeholder="Buscar...">
+          <span class="icon">🔍</span>
+        </div>
         <select id="sidebar-filter-select">
           <option value="">Todos os grupos</option>
         </select>
       </div>
+
       <nav id="sidebar-groups" class="sidebar-groups" aria-label="Lista de grupos">
-        <!-- groups inserted by script -->
-      </nav>
+        </nav>
     </div>
   </aside>
 
   <main>
-    <div id="search-container" style="display:none;">
+    <div id="search-container">
       <div class="search-box">
-        <input type="text" id="search-input" placeholder="Pesquisar produtos...">
+        <input type="text" id="search-input" placeholder="O que você procura hoje?">
         <select id="filter-select">
           <option value="">Todos os grupos</option>
         </select>
+        <button class="search-btn">🔍</button>
       </div>
       <ul id="search-suggestions"></ul>
     </div>
 
     <section id="product-list">
-      <!-- Produtos serão inseridos aqui via JavaScript -->
-    </section>
+      </section>
   </main>
 
   <footer>
     <div class="footer-content">
-      <p> 2025 Torres Materiais de Construção</p>
-      <p>R. Arcanjo Cândido da Silva, 3476 - Praia de Fora, Palhoça - SC, 88138-300</p>
-      <a href="https://www.google.com/maps?q=R.+Arcanjo+C%C3%A2ndido+da+Silva,+3476+-+Praia+de+Fora,+Palho%C3%A7a+-+SC,+88138-300" target="_blank" rel="noopener">
-        <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z" fill="#FFD700"/>
+      <img src="Logo.png" alt="Torres Logo" class="footer-logo">
+      <p>&copy; 2025 Torres Materiais de Construção</p>
+      <p>R. Arcanjo Cândido da Silva, 3476 - Praia de Fora, Palhoça - SC</p>
+      
+      <a href="https://www.google.com/maps/search/?api=1&query=R.+Arcanjo+Cândido+da+Silva,+3476+-+Praia+de+Fora,+Palhoça+-+SC" target="_blank" rel="noopener" class="map-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5 14.5 7.62 14.5 9 13.38 11.5 12 11.5z"/>
         </svg>
-        Ver Localização
+        Ver Localização no Mapa
       </a>
     </div>
   </footer>
