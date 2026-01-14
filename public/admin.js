@@ -2,7 +2,6 @@ import { getProducts, addProductToDB, deleteProductFromDB, calculateProfit } fro
 import { getInteractionStats } from './modules/adminStats.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Variável para saber se estamos editando
     let editingProduct = null;
 
     // Elementos
@@ -13,29 +12,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('admin-login-form');
     const registerForm = document.getElementById('admin-register-form');
     
-    // Links de navegação
+    // Navegação
     document.getElementById('show-register')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        loginSection.classList.add('hidden');
-        registerSection.classList.remove('hidden');
+        e.preventDefault(); loginSection.classList.add('hidden'); registerSection.classList.remove('hidden');
     });
-
     document.getElementById('show-login')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        registerSection.classList.add('hidden');
-        loginSection.classList.remove('hidden');
+        e.preventDefault(); registerSection.classList.add('hidden'); loginSection.classList.remove('hidden');
     });
-
     document.getElementById('logout-button')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        localStorage.removeItem('adminLoggedIn');
-        window.location.reload();
+        e.preventDefault(); localStorage.removeItem('adminLoggedIn'); window.location.reload();
     });
 
-    // --- VERIFICAÇÃO INICIAL ---
     checkLoginStatus();
 
-    // --- LOGIN ---
     if(loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -46,32 +35,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const res = await fetch('/api/auth', {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'login', email, password })
+                    method: 'POST', body: JSON.stringify({ action: 'login', email, password })
                 });
-
                 if (res.ok) {
                     const data = await res.json();
-                    if(data.success) {
-                        localStorage.setItem('adminLoggedIn', 'true');
-                        checkLoginStatus();
-                    } else { alert('Acesso Negado.'); }
+                    if(data.success) { localStorage.setItem('adminLoggedIn', 'true'); checkLoginStatus(); }
+                    else { alert('Acesso Negado.'); }
                 } else {
                     if(email === 'admin@torres.com' && password === 'admin123') {
-                        localStorage.setItem('adminLoggedIn', 'true');
-                        checkLoginStatus();
+                        localStorage.setItem('adminLoggedIn', 'true'); checkLoginStatus();
                     } else { alert('Dados incorretos.'); }
                 }
-            } catch(e) {
-                console.error(e);
-                alert('Erro de conexão.');
-            } finally {
-                btn.innerText = "Entrar"; btn.disabled = false;
-            }
+            } catch(e) { console.error(e); alert('Erro de conexão.'); } 
+            finally { btn.innerText = "Entrar"; btn.disabled = false; }
         });
     }
 
-    // --- REGISTRO ---
     if(registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -82,31 +61,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if(password !== confirm) return alert('Senhas não batem.');
 
             const res = await fetch('/api/auth', {
-                method: 'POST',
-                body: JSON.stringify({ action: 'register', email, password })
+                method: 'POST', body: JSON.stringify({ action: 'register', email, password })
             });
 
-            if(res.ok) {
-                alert('Admin criado!');
-                registerSection.classList.add('hidden');
-                loginSection.classList.remove('hidden');
-            } else { alert('Erro ao criar admin. Tente outro email.'); }
+            if(res.ok) { alert('Admin criado!'); registerSection.classList.add('hidden'); loginSection.classList.remove('hidden'); }
+            else { alert('Erro ao criar admin.'); }
         });
     }
 
-    // --- CONTROLE DE TELA ---
     function checkLoginStatus() {
         const isLogged = localStorage.getItem('adminLoggedIn') === 'true';
-
         if(isLogged) {
-            loginSection.classList.add('hidden');
-            registerSection.classList.add('hidden');
-            dashboard.classList.remove('hidden');
-            logoutBtn.classList.remove('hidden');
+            loginSection.classList.add('hidden'); registerSection.classList.add('hidden');
+            dashboard.classList.remove('hidden'); logoutBtn.classList.remove('hidden');
             loadDashboardData();
         } else {
-            loginSection.classList.remove('hidden');
-            dashboard.classList.add('hidden');
+            loginSection.classList.remove('hidden'); dashboard.classList.add('hidden');
             logoutBtn.classList.add('hidden');
         }
     }
@@ -115,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const products = await getProducts();
         renderTable(products);
         updateStats();
-        setupProductForm(); // Configura o formulário
+        setupProductForm();
         updateGroupSelect(products);
     }
 
@@ -123,17 +93,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = document.querySelector('#product-table tbody');
         tbody.innerHTML = products.map(p => `
             <tr>
-                <td>${p.group || p.group_name || '-'}</td>
-                <td>${p.name}</td>
+                <td title="${p.group || '-'}">${p.group || p.group_name || '-'}</td>
+                <td title="${p.name}">${p.name}</td>
                 <td>R$ ${parseFloat(p.price).toFixed(2)}</td>
-                <td style="display:flex; gap:5px;">
-                   <button class="action-btn btn-edit" data-id="${p.id}" style="background-color:#F59E0B; color:white;">Editar</button>
+                <td>
+                   <button class="action-btn btn-edit" data-id="${p.id}">Editar</button>
                    <button class="action-btn btn-delete" data-id="${p.id}">Excluir</button>
                 </td>
             </tr>
         `).join('');
 
-        // Listener Excluir
         tbody.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 if(confirm('Apagar produto?')) {
@@ -143,36 +112,26 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Listener Editar
         tbody.querySelectorAll('.btn-edit').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const id = e.target.dataset.id;
                 const product = products.find(p => String(p.id) === String(id));
-                if(product) {
-                    fillFormForEdit(product);
-                }
+                if(product) fillFormForEdit(product);
             });
         });
     }
 
-    // --- FUNÇÃO PARA PREENCHER FORM NA EDIÇÃO ---
     function fillFormForEdit(product) {
-        editingProduct = product; // Salva quem estamos editando
-        
+        editingProduct = product;
         document.getElementById('product-name').value = product.name;
         document.getElementById('product-price').value = product.price;
         document.getElementById('product-description').value = product.description;
         
-        // Tenta selecionar o grupo
         const select = document.getElementById('product-group');
         const groupName = product.group || product.group_name;
         select.value = groupName;
-        // Se não tiver no select, põe no input de novo grupo
-        if(select.value !== groupName) {
-            document.getElementById('new-group').value = groupName;
-        }
+        if(select.value !== groupName) document.getElementById('new-group').value = groupName;
 
-        // Mostra as imagens atuais no preview
         const previewDiv = document.getElementById('image-preview');
         previewDiv.innerHTML = '';
         if(product.images && product.images.length) {
@@ -185,11 +144,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Muda o texto do botão
         const formBtn = document.querySelector('#product-form button[type="submit"]');
-        formBtn.innerText = "Salvar Alterações";
+        formBtn.innerText = "Salvar Alterações (Modo Edição)";
+        formBtn.style.backgroundColor = "#F59E0B"; // Laranja para indicar edição
         
-        // Rola a tela pra cima
         document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -206,11 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const MAX_WIDTH = 800; const MAX_HEIGHT = 800;
                     let width = img.width; let height = img.height;
 
-                    if (width > height) {
-                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                    } else {
-                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-                    }
+                    if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
+                    else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
 
                     canvas.width = width; canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
@@ -247,50 +202,44 @@ document.addEventListener('DOMContentLoaded', () => {
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = newForm.querySelector('button');
-            btn.innerText = "Salvando..."; btn.disabled = true;
+            const originalText = btn.innerText;
+            btn.innerText = "Processando..."; btn.disabled = true;
 
             try {
                 const name = document.getElementById('product-name').value;
-                const price = parseFloat(document.getElementById('product-price').value); // Se vazio vira NaN
+                const priceVal = document.getElementById('product-price').value;
+                const price = priceVal === "" ? 0 : parseFloat(priceVal); // Permite 0 ou vazio
+                
                 const desc = document.getElementById('product-description').value;
                 const group = document.getElementById('new-group').value || document.getElementById('product-group').value || 'Geral';
                 
-                // Lógica da Imagem no Edit
                 let images = [];
-                // 1. Se tem novas fotos selecionadas, usa elas
                 if(imageInput.files.length > 0) {
                     const promises = Array.from(imageInput.files).map(fileToBase64);
                     images = await Promise.all(promises);
-                } 
-                // 2. Se não tem novas fotos, MAS estamos editando, mantém as antigas
-                else if (editingProduct && editingProduct.images) {
+                } else if (editingProduct && editingProduct.images) {
                     images = editingProduct.images;
                 }
                 
-                // ID: Se editando, usa o ID dele. Se novo, cria ID.
                 const id = editingProduct ? editingProduct.id : Date.now().toString();
 
-                const newProd = { 
-                    id: id, 
-                    name, 
-                    price: isNaN(price) ? 0 : price, // Salva 0 se estiver em branco
-                    description: desc, 
-                    group, 
-                    images 
-                };
-                
+                const newProd = { id, name, price, description: desc, group, images };
                 await addProductToDB(newProd);
                 
-                alert('Produto Salvo!');
+                alert('Salvo com sucesso!');
                 newForm.reset();
                 previewDiv.innerHTML = '';
-                editingProduct = null; // Limpa o estado de edição
-                btn.innerText = "Salvar Produto"; // Volta texto original
+                editingProduct = null;
+                
+                // Reseta botão
+                btn.innerText = "Salvar Produto";
+                btn.style.backgroundColor = ""; // Volta a cor original
+                
                 loadDashboardData();
             } catch(e) {
-                alert('Erro ao salvar: ' + e.message);
+                alert('Erro: ' + e.message);
+                btn.innerText = originalText;
             } finally {
-                if(!editingProduct) btn.innerText = "Salvar Produto"; 
                 btn.disabled = false;
             }
         });
