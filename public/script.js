@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupAdminSecret();
 });
 
-// --- RENDERIZA OS SLIDERS DA PÁGINA PRINCIPAL ---
 function renderProductSliders(products) {
   const productList = document.getElementById('product-list');
   productList.innerHTML = '';
@@ -39,7 +38,6 @@ function renderProductSliders(products) {
     const sliderContainer = document.createElement('div');
     sliderContainer.className = 'slider-container';
 
-    // Setas do grupo de produtos
     const prevBtn = document.createElement('button');
     prevBtn.className = 'slider-btn prev';
     prevBtn.innerHTML = '&#10094;';
@@ -57,7 +55,6 @@ function renderProductSliders(products) {
       const card = document.createElement('div');
       card.className = 'product-card';
       
-      // Lógica do Carrossel Pequeno (Card)
       const images = product.images && product.images.length ? product.images : ['https://via.placeholder.com/150'];
       const hasMultiple = images.length > 1;
       
@@ -67,13 +64,24 @@ function renderProductSliders(products) {
       });
       imagesHTML += `</div>`;
 
-      // Setas internas do cartão
       let controlsHTML = '';
       if(hasMultiple) {
           controlsHTML = `
             <div class="slider-btn prev" data-action="prev" style="left: 5px;">&lt;</div>
             <div class="slider-btn next" data-action="next" style="right: 5px;">&gt;</div>
           `;
+      }
+
+      // --- LÓGICA DO PREÇO ---
+      // Se tiver valor e for maior que zero, mostra. Se não, mostra vazio.
+      const priceVal = parseFloat(product.price);
+      let priceHTML = '';
+      if (priceVal > 0) {
+          priceHTML = `<p class="price">R$ ${priceVal.toFixed(2)}</p>`;
+      } else {
+          // Opcional: Se quiser escrever algo como "Sob Consulta", coloque aqui.
+          // Por enquanto deixei vazio como pediu.
+          priceHTML = `<p class="price" style="visibility:hidden">.</p>`; 
       }
 
       card.innerHTML = `
@@ -83,7 +91,7 @@ function renderProductSliders(products) {
         </div>
         <div class="product-info">
           <h3>${product.name}</h3>
-          <p class="price">R$ ${parseFloat(product.price).toFixed(2)}</p>
+          ${priceHTML}
           <button class="buy-button" data-id="${product.id}">Solicitar Produto</button>
         </div>
       `;
@@ -100,10 +108,9 @@ function renderProductSliders(products) {
   });
 
   setupScrollObserver();
-  setupCardCarouselEvents(); // Ativa as setas dos cartões
+  setupCardCarouselEvents();
 }
 
-// --- CONTROLE DOS CARROSSEIS PEQUENOS (CARDS) ---
 function setupCardCarouselEvents() {
     document.querySelectorAll('.product-carousel').forEach(carousel => {
         const track = carousel.querySelector('.carousel-images');
@@ -112,21 +119,17 @@ function setupCardCarouselEvents() {
 
         carousel.querySelectorAll('.slider-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Não abre o modal
+                e.stopPropagation();
                 const action = btn.getAttribute('data-action');
-                
                 if(action === 'next') current = (current + 1) % total;
                 else current = (current - 1 + total) % total;
-                
                 track.style.transform = `translateX(-${current * (100 / total)}%)`;
             });
         });
     });
 }
 
-// --- MODAL COM CARROSSEL GRANDE ---
 function setupGlobalClicks(products) {
-    // Cria o HTML do modal se não existir
     if (!document.getElementById('product-modal')) {
         const modalHTML = `
         <div id="product-modal" class="modal">
@@ -149,20 +152,16 @@ function setupGlobalClicks(products) {
     const prevBtn = modal.querySelector('.modal-btn.prev');
     const nextBtn = modal.querySelector('.modal-btn.next');
     
-    // Variáveis de estado do modal
     let currentModalImages = [];
     let currentModalIndex = 0;
 
-    // Fechar modal
     modal.querySelector('.modal-close').onclick = () => modal.style.display = 'none';
     modal.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; }
 
-    // Função para atualizar imagem do modal
     const updateModalImage = () => {
         modalImg.src = currentModalImages[currentModalIndex];
     };
 
-    // Cliques nas setas do modal
     prevBtn.onclick = () => {
         currentModalIndex = (currentModalIndex - 1 + currentModalImages.length) % currentModalImages.length;
         updateModalImage();
@@ -172,11 +171,9 @@ function setupGlobalClicks(products) {
         updateModalImage();
     };
 
-    // Clique Global (Delegação de Eventos)
     document.getElementById('product-list').addEventListener('click', (e) => {
         const target = e.target;
         
-        // Botão de WhatsApp
         if (target.classList.contains('buy-button')) {
             const id = target.getAttribute('data-id');
             const product = products.find(p => String(p.id) === String(id));
@@ -184,18 +181,15 @@ function setupGlobalClicks(products) {
             return;
         }
 
-        // Clique na imagem (abre modal)
         const carouselClick = target.closest('.product-carousel');
         if (carouselClick && !target.classList.contains('slider-btn')) {
             const id = carouselClick.getAttribute('data-id');
             const product = products.find(p => String(p.id) === String(id));
             
             if(product) {
-                // Configura as imagens
                 currentModalImages = (product.images && product.images.length) ? product.images : ['https://via.placeholder.com/150'];
                 currentModalIndex = 0;
                 
-                // Mostra/Esconde setas dependendo da qtd
                 if(currentModalImages.length > 1) {
                     prevBtn.classList.remove('hidden');
                     nextBtn.classList.remove('hidden');
@@ -206,9 +200,13 @@ function setupGlobalClicks(products) {
 
                 updateModalImage();
                 
+                // Lógica de preço no modal também
+                const priceVal = parseFloat(product.price);
+                const priceText = (priceVal > 0) ? `R$ ${priceVal.toFixed(2)}` : '';
+
                 modalDetails.innerHTML = `
                     <h3>${product.name}</h3>
-                    <p class="price">R$ ${parseFloat(product.price).toFixed(2)}</p>
+                    <p class="price">${priceText}</p>
                     <p>${product.description || 'Sem descrição.'}</p>
                     <button class="buy-button" onclick="window.open('https://wa.me/554832428800?text=Interesse em ${encodeURIComponent(product.name)}', '_blank')">Pedir no WhatsApp</button>
                 `;
@@ -221,11 +219,13 @@ function setupGlobalClicks(products) {
 }
 
 function redirectToWhatsApp(product) {
-  const message = encodeURIComponent(`Olá, vi no site e tenho interesse em: ${product.name} (R$ ${product.price.toFixed(2)})`);
+  const priceVal = parseFloat(product.price);
+  const priceMsg = (priceVal > 0) ? `(R$ ${priceVal.toFixed(2)})` : '(Preço a consultar)';
+  
+  const message = encodeURIComponent(`Olá, vi no site e tenho interesse em: ${product.name} ${priceMsg}`);
   window.open(`https://wa.me/554832428800?text=${message}`, '_blank');
 }
 
-// --- SIDEBAR E OUTROS ---
 function initializeSidebar(products) {
     const sidebarGroups = document.getElementById('sidebar-groups');
     const filterInput = document.getElementById('sidebar-search-input');

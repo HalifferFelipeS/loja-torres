@@ -1,30 +1,27 @@
 const { neon } = require('@neondatabase/serverless');
 
 module.exports = async (req, res) => {
-    // 1. CORS (Permitir conexão do site)
+    // 1. CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    // Resposta rápida para o navegador (Preflight)
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
-    // 2. Conexão Segura
+    // 2. Conexão
     if (!process.env.DATABASE_URL) {
         return res.status(500).json({ error: "Conexão com Banco não configurada" });
     }
     const sql = neon(process.env.DATABASE_URL);
 
-    // 3. TRATAMENTO DE DADOS (A CORREÇÃO MÁGICA)
+    // 3. Tratamento de corpo da requisição
     let body = req.body;
     if (typeof body === 'string') {
         try {
             body = JSON.parse(body);
-        } catch (e) {
-            // Se falhar, segue o baile (pode ser um GET sem corpo)
-        }
+        } catch (e) {}
     }
 
     try {
@@ -37,27 +34,32 @@ module.exports = async (req, res) => {
                 name: p.name,
                 price: parseFloat(p.price),
                 description: p.description,
-                group: p.group_name, // Nota: no banco é group_name
+                group: p.group_name, 
                 images: p.images ? (typeof p.images === 'string' ? JSON.parse(p.images) : p.images) : []
             }));
             
             return res.status(200).json(products);
         }
 
-        // --- CRIAÇÃO (POST) ---
+        // --- CRIAÇÃO E EDIÇÃO (POST) ---
         if (req.method === 'POST') {
             if (!body) return res.status(400).json({ error: "Nenhum dado enviado" });
 
-            // Garante que imagens seja uma string JSON válida para o banco
             const imagesArray = body.images || [];
             const imagesString = JSON.stringify(imagesArray);
-            
-            // Garante que group não seja nulo
             const groupName = body.group || 'Geral';
 
+            // AQUI ESTÁ A MÁGICA DO EDITAR:
+            // "ON CONFLICT (id) DO UPDATE" significa: se já existe esse ID, atualize os dados!
             await sql`
                 INSERT INTO products (id, name, price, description, group_name, images)
                 VALUES (${String(body.id)}, ${body.name}, ${body.price}, ${body.description}, ${groupName}, ${imagesString})
+                ON CONFLICT (id) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    price = EXCLUDED.price,
+                    description = EXCLUDED.description,
+                    group_name = EXCLUDED.group_name,
+                    images = EXCLUDED.images
             `;
             return res.status(200).json({ message: "Salvo com sucesso" });
         }

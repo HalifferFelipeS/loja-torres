@@ -1,6 +1,4 @@
-/* =========================================
-   VARIÁVEIS GERAIS & TEMA
-   ========================================= */
+/* --- Variáveis (Tema Amarelo & Profissional) --- */
 :root {
   --primary: #FFD700;       /* AMARELO ORIGINAL */
   --primary-hover: #FFC107;
@@ -28,11 +26,10 @@ body {
   min-height: 100vh;
 }
 
+/* CLASSE UTILITÁRIA */
 .hidden { display: none !important; }
 
-/* =========================================
-   HEADER
-   ========================================= */
+/* --- Header --- */
 header {
   height: var(--header-height);
   background-color: var(--bg-white);
@@ -52,165 +49,427 @@ header {
   justify-content: space-between;
 }
 
-.logo-area { display: flex; align-items: center; gap: 15px; }
-.header-logo { height: 60px; width: auto; }
-.brand-text { display: flex; flex-direction: column; cursor: pointer; user-select: none; }
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.header-logo {
+  height: 60px;
+  width: auto;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer; /* Indica que é clicável para o segredo */
+    user-select: none;
+}
+
 .brand-text h1 {
-  font-size: 1.5rem; color: var(--text-dark); font-weight: 800;
-  line-height: 1; text-transform: uppercase; border-bottom: 3px solid var(--primary); display: inline-block;
+  font-size: 1.5rem;
+  color: var(--text-dark);
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  border-bottom: 3px solid var(--primary);
+  display: inline-block;
 }
 
+/* --- BOTÃO ADMIN SECRETO --- */
 .admin-link {
-    text-decoration: none; color: var(--text-light); font-size: 0.85rem;
-    border: 1px solid var(--border-color); padding: 8px 15px; border-radius: 20px;
-    transition: all 0.3s; opacity: 0; pointer-events: none;
+    text-decoration: none;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    border: 1px solid var(--border-color);
+    padding: 8px 15px;
+    border-radius: 20px;
+    transition: all 0.3s;
+    
+    /* Segredo: Invisível por padrão */
+    opacity: 0;
+    pointer-events: none;
 }
-.admin-link.revealed { opacity: 1; pointer-events: auto; background-color: #000; color: var(--primary); border-color: #000; }
 
-/* =========================================
-   LAYOUT & SIDEBAR
-   ========================================= */
-.layout-container { display: flex; flex: 1; }
+/* Classe que o JS vai adicionar após 3 cliques */
+.admin-link.revealed {
+    opacity: 1;
+    pointer-events: auto;
+    background-color: #000;
+    color: var(--primary);
+    border-color: #000;
+}
 
+/* --- Layout --- */
+.layout-container {
+  display: flex;
+  flex: 1;
+}
+
+/* --- Sidebar Vertical --- */
 .sidebar {
-  width: var(--sidebar-width); background-color: var(--bg-white); border-right: 1px solid var(--border-color);
-  position: fixed; top: var(--header-height); bottom: 0; left: 0; overflow-y: auto; z-index: 900; padding: 1.5rem 1rem;
+  width: var(--sidebar-width);
+  background-color: var(--bg-white);
+  border-right: 1px solid var(--border-color);
+  position: fixed;
+  top: var(--header-height);
+  bottom: 0;
+  left: 0;
+  overflow-y: auto;
+  z-index: 900;
+  padding: 1.5rem 1rem;
 }
-.sidebar h3 { font-size: 0.9rem; text-transform: uppercase; color: var(--text-dark); font-weight: 800; margin-bottom: 1rem; padding-left: 10px; border-left: 4px solid var(--primary); }
-.sidebar-search input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius); margin-bottom: 1rem; outline: none; }
+
+.sidebar h3 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  color: var(--text-dark);
+  font-weight: 800;
+  margin-bottom: 1rem;
+  padding-left: 10px;
+  border-left: 4px solid var(--primary);
+}
+
+.sidebar-search input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  outline: none;
+}
 .sidebar-search input:focus { border-color: var(--primary); }
 
-.sidebar-group-item { display: block; padding: 12px 15px; color: var(--text-light); text-decoration: none; font-weight: 500; border-bottom: 1px solid #f9f9f9; transition: all 0.2s; border-radius: 4px; }
-.sidebar-group-item:hover { background-color: #FFFDF0; color: #000; padding-left: 20px; }
-.sidebar-group-item.active { background-color: var(--primary); color: var(--text-on-primary); font-weight: 700; border-radius: var(--radius); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-
-main { margin-left: var(--sidebar-width); padding: 2rem; width: calc(100% - var(--sidebar-width)); }
-
-/* Busca */
-#search-container { max-width: 800px; margin: 0 auto 3rem; }
-.search-box { display: flex; border: 2px solid var(--primary); border-radius: 30px; overflow: hidden; background: #fff; }
-#search-input { flex: 1; padding: 15px 20px; border: none; font-size: 1rem; outline: none; }
-.search-btn { background: var(--primary); border: none; padding: 0 30px; font-size: 1.2rem; cursor: pointer; color: var(--text-on-primary); }
-
-/* Grupos */
-.product-group { margin-bottom: 3rem; background: var(--bg-white); padding: 1.5rem; border-radius: var(--radius); box-shadow: 0 2px 10px rgba(0,0,0,0.03); scroll-margin-top: 100px; }
-.group-header { border-bottom: 2px solid #f0f0f0; margin-bottom: 1rem; padding-bottom: 10px; }
-.group-title { font-size: 1.4rem; color: var(--text-dark); }
-.slider-container { position: relative; display: flex; align-items: center; }
-.products-grid { display: flex; gap: 20px; overflow-x: auto; padding: 10px 5px 20px 5px; scroll-behavior: smooth; width: 100%; scrollbar-width: thin; }
-
-/* =========================================
-   CARTÃO DE PRODUTO & CARROSSEL PEQUENO
-   ========================================= */
-.product-card {
-  width: 240px; min-width: 240px; max-width: 240px;
-  background: var(--bg-white); border: 1px solid #eee; border-radius: 12px;
-  display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s;
-  position: relative; flex-shrink: 0; margin-bottom: 5px;
+.sidebar-group-item {
+  display: block;
+  padding: 12px 15px;
+  color: var(--text-light);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid #f9f9f9;
+  transition: all 0.2s;
+  border-radius: 4px;
 }
-.product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: var(--primary); }
+
+.sidebar-group-item:hover {
+  background-color: #FFFDF0; 
+  color: #000;
+  padding-left: 20px;
+}
+
+.sidebar-group-item.active {
+  background-color: var(--primary);
+  color: var(--text-on-primary);
+  font-weight: 700;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* --- Conteúdo Principal --- */
+main {
+  margin-left: var(--sidebar-width);
+  padding: 2rem;
+  width: calc(100% - var(--sidebar-width));
+}
+
+/* Busca Grande */
+#search-container {
+  max-width: 800px;
+  margin: 0 auto 3rem;
+}
+
+.search-box {
+  display: flex;
+  border: 2px solid var(--primary);
+  border-radius: 30px;
+  overflow: hidden;
+  background: #fff;
+}
+
+#search-input {
+  flex: 1;
+  padding: 15px 20px;
+  border: none;
+  font-size: 1rem;
+  outline: none;
+}
+
+.search-btn {
+  background: var(--primary);
+  border: none;
+  padding: 0 30px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--text-on-primary);
+}
+
+/* --- Sliders de Produtos --- */
+.product-group {
+  margin-bottom: 3rem;
+  background: var(--bg-white);
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  scroll-margin-top: 100px; /* Para o scroll não bater no header */
+}
+
+.group-header {
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 1rem;
+  padding-bottom: 10px;
+}
+
+.group-title {
+  font-size: 1.4rem;
+  color: var(--text-dark);
+}
+
+.slider-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.products-grid {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 10px 5px 20px 5px;
+  scroll-behavior: smooth;
+  width: 100%;
+  scrollbar-width: thin;
+}
+
+/* Botões do Slider */
+.slider-btn {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  position: absolute;
+  z-index: 2;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+.slider-btn:hover { background: var(--primary); border-color: var(--primary); }
+.slider-btn.prev { left: -20px; }
+.slider-btn.next { right: -20px; }
+
+/* --- Card de Produto --- */
+.product-card {
+  min-width: 250px;
+  max-width: 250px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s;
+  position: relative;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
 
 .product-carousel {
-  height: 200px; width: 100%; position: relative; overflow: hidden;
-  border-radius: 12px 12px 0 0; background: #fff; border-bottom: 1px solid #f9f9f9; cursor: pointer;
+  height: 220px;
+  width: 100%;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  cursor: pointer;
+  border-bottom: 1px solid #f9f9f9;
 }
 
-/* --- CORREÇÃO DO CARROSSEL --- */
-.carousel-images {
-    display: flex; /* Permite que as imagens fiquem lado a lado */
-    height: 100%;
-    transition: transform 0.3s ease; /* Animação suave ao deslizar */
-}
-
-/* Imagens do cartão */
 .carousel-images img {
-  height: 100%;
+  max-height: 190px;
+  max-width: 100%;
   object-fit: contain;
-  background-color: #fff;
-  flex-shrink: 0; /* Impede a imagem de amassar */
-  /* A largura é definida pelo JS (33%, 50%, etc) */
 }
 
-/* Setas do cartão */
-.product-card .slider-btn {
-  position: absolute; top: 50%; transform: translateY(-50%);
-  width: 25px; height: 25px; border-radius: 50%; background: rgba(255,255,255,0.9);
-  border: 1px solid #ddd; font-size: 0.8rem; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; z-index: 10; opacity: 0.7;
+.product-info {
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
-.product-card .slider-btn:hover { opacity: 1; background: var(--primary); }
 
-/* Infos */
-.product-info { padding: 1rem; display: flex; flex-direction: column; flex: 1; gap: 8px; }
-.product-info h3 { font-size: 0.95rem; color: #333; line-height: 1.4; height: 2.8em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin: 0; }
-.product-info .price { font-size: 1.3rem; font-weight: 800; color: var(--text-dark); margin: 0; }
-.buy-button { width: 100%; background: var(--primary); color: var(--text-on-primary); font-weight: 700; border: none; padding: 10px; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; transition: 0.2s; margin-top: auto; }
-.buy-button:hover { background: var(--primary-hover); box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4); }
+.product-info h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  height: 40px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
 
-/* =========================================
-   MODAL (Carrossel Grande)
-   ========================================= */
+.price {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin-bottom: 10px;
+}
+
+.buy-button {
+  width: 100%;
+  background: var(--primary);
+  color: var(--text-on-primary);
+  font-weight: 700;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  transition: 0.2s;
+  margin-top: auto;
+}
+.buy-button:hover {
+  background: var(--primary-hover);
+  box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4);
+}
+
+/* --- FOOTER (CORRIGIDO) --- */
+footer {
+  background-color: #222; /* Fundo escuro para footer profissional */
+  padding: 3rem 2rem;
+  text-align: center;
+  color: #ccc;
+  border-top: 4px solid var(--primary);
+  margin-top: auto;
+  /* CORREÇÃO PRINCIPAL: Empurra o footer para a direita para não ficar atrás da sidebar */
+  margin-left: var(--sidebar-width); 
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Modal */
 .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
 .modal-content { background: #fff; width: 90%; max-width: 800px; max-height: 90vh; border-radius: 12px; display: flex; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden; }
-.modal-close { position: absolute; top: 15px; right: 15px; background: #f0f0f0; border: none; font-size: 1.5rem; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; z-index: 20; }
-
-.modal-carousel { 
-    flex: 1; background: #f9f9f9; padding: 20px; 
-    display: flex; align-items: center; justify-content: center; position: relative; 
-}
-.modal-carousel img { max-width: 100%; max-height: 400px; object-fit: contain; }
-
-/* Setas do Modal */
-.modal-btn {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    background: rgba(0,0,0,0.1); border: none; font-size: 2rem; color: #333;
-    padding: 10px; cursor: pointer; z-index: 10; border-radius: 5px;
-}
-.modal-btn:hover { background: rgba(0,0,0,0.2); }
-.modal-btn.prev { left: 10px; }
-.modal-btn.next { right: 10px; }
-
+.modal-close { position: absolute; top: 15px; right: 15px; background: #f0f0f0; border: none; font-size: 1.5rem; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; z-index: 10; }
+.modal-carousel { flex: 1; background: #f9f9f9; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal-image { max-width: 100%; max-height: 400px; object-fit: contain; }
 .modal-details { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; }
 .modal-details h3 { font-size: 1.8rem; margin-bottom: 1rem; color: #333; }
 .modal-details .price { font-size: 2rem; color: var(--primary); margin-bottom: 1.5rem; font-weight: 800; }
 .modal-details p { line-height: 1.6; color: #666; font-size: 1rem; }
 
-/* Footer */
-footer { background-color: #222; padding: 3rem 2rem; text-align: center; color: #ccc; border-top: 4px solid var(--primary); margin-top: auto; margin-left: var(--sidebar-width); }
-.footer-content { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-
-/* Admin Pages */
-#login-section, #register-section { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 60vh; padding: 2rem; }
-#login-section h2, #register-section h2 { margin-bottom: 1.5rem; color: var(--text-dark); font-size: 2rem; font-weight: 800; }
-#admin-login-form, #admin-register-form { background-color: #ffffff; padding: 2.5rem; border-radius: 16px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); border: 1px solid #f0f0f0; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 1.2rem; }
-#admin-login-form label, #admin-register-form label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; color: var(--text-light); margin-left: 5px; }
-#admin-login-form input, #admin-register-form input { width: 100%; padding: 14px 20px; border-radius: 50px; border: 2px solid #e5e5e5; background-color: #fafafa; font-size: 1rem; outline: none; transition: all 0.3s ease; }
-#admin-login-form input:focus, #admin-register-form input:focus { border-color: var(--primary); background-color: #fff; box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.2); }
-#admin-login-form button, #admin-register-form button { margin-top: 1rem; border-radius: 50px; padding: 14px; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-
-/* Admin Dashboard */
-#admin-dashboard { max-width: 1200px; margin: 0 auto; padding: 20px; animation: fadeIn 0.5s ease; }
-.dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
-.admin-card { background: #fff; border-radius: 16px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; margin-bottom: 2rem; }
-.admin-card h2 { font-size: 1.4rem; color: var(--text-dark); margin-bottom: 1.5rem; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px; }
-#product-form form { display: flex; flex-direction: column; gap: 1.2rem; }
-#product-form .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-#product-form input, #product-form select, #product-form textarea { width: 100%; padding: 12px 20px; border: 2px solid #e9ecef; border-radius: 20px; font-size: 0.95rem; outline: none; transition: all 0.3s; background-color: #fafafa; font-family: 'Inter', sans-serif; }
-#product-form input:focus { border-color: var(--primary); background-color: #fff; box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.15); }
-#product-form button[type="submit"] { margin-top: 10px; border-radius: 30px; font-size: 1rem; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-.admin-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.95rem; }
-.admin-table thead { background-color: var(--primary); color: var(--text-on-primary); }
-.admin-table th, .admin-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
-.action-btn { padding: 6px 12px; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 600; }
-.btn-delete { background-color: #fee2e2; color: #dc2626; }
-.stats-col .stat-item { background: #fff; padding: 1.5rem; border-radius: 12px; border: 1px solid #f0f0f0; margin-bottom: 1rem; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-.stats-col p { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); }
-.stats-col .highlight { color: #27ae60; }
-
-@media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
+/* Responsivo */
 @media (max-width: 768px) {
-  .sidebar { display: none; } main { margin-left: 0; width: 100%; padding: 1rem; } footer { margin-left: 0; }
-  .modal-content { flex-direction: column; overflow-y: auto; } .modal-carousel { height: 250px; }
-  .product-card { width: 170px; min-width: 170px; max-width: 170px; }
-  .product-carousel { height: 150px; }
+  .sidebar { display: none; }
+  main { margin-left: 0; width: 100%; padding: 1rem; }
+  footer { margin-left: 0; } /* Remove margem no mobile */
+  .modal-content { flex-direction: column; overflow-y: auto; }
+  .modal-carousel { height: 250px; }
+  .slider-btn { display: none; }
+}
+
+/* =========================================
+   ESTILOS DA TELA DE LOGIN ADMINISTRATIVO
+   ========================================= */
+
+/* Centraliza a seção de login na área principal */
+#login-section.active {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh; /* Ocupa a altura da tela para centralizar verticalmente */
+    background-color: #f8f9fa; /* Fundo levemente diferente pra destacar */
+}
+
+/* O título "Login Administrativo" */
+#login-section h2 {
+    margin-bottom: 2rem;
+    color: var(--dark-color);
+    font-size: 1.8rem;
+}
+
+/* O formulário em si (o "cartão" branco) */
+#login-form {
+    background-color: #ffffff;
+    padding: 3rem;
+    border-radius: 20px; /* Bordas bem arredondadas no cartão */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Sombra suave para dar profundidade */
+    width: 100%;
+    max-width: 450px; /* Largura máxima para não ficar esticado */
+}
+
+/* Ajuste dos grupos de formulário (label + input) */
+#login-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+/* Estilo das Labels (Email/Senha) */
+#login-form label {
+    display: block;
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-left: 10px; /* Alinha com o início arredondado do input */
+}
+
+/* --- Estilos dos Campos de Input (O que você pediu) --- */
+#login-form input[type="email"],
+#login-form input[type="password"] {
+    width: 100%;
+    padding: 1rem 1.5rem; /* Mais espaçamento interno para ficar "gordinho" */
+    
+    /* Borda arredondada estilo pílula */
+    border-radius: 50px; 
+    
+    /* Cor da borda padrão (suave) */
+    border: 2px solid #e9ecef;
+    
+    background-color: #f8f9fa;
+    font-size: 1rem;
+    transition: all 0.3s ease; /* Transição suave ao clicar */
+    outline: none; /* Remove a linha azul padrão feia do navegador */
+}
+
+/* Quando o usuário clica no campo (Foco) */
+#login-form input:focus {
+    /* Borda da cor do tema */
+    border-color: var(--primary-color);
+    background-color: #fff;
+    /* Um brilho suave da cor do tema */
+    box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.15);
+}
+
+/* --- Botão de Entrar --- */
+#login-form button[type="submit"] {
+    width: 100%;
+    padding: 1rem;
+    margin-top: 1rem;
+    
+    /* Botão também arredondado pra combinar */
+    border-radius: 50px;
+    
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, var(--primary-color), #357abd); /* Gradiente sutil */
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+    transition: transform 0.2s;
+}
+
+/* Efeito ao passar o mouse no botão */
+#login-form button[type="submit"]:hover {
+    transform: translateY(-2px); /* Levanta um pouquinho */
+    box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
 }

@@ -2,6 +2,9 @@ import { getProducts, addProductToDB, deleteProductFromDB, calculateProfit } fro
 import { getInteractionStats } from './modules/adminStats.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Variável para saber se estamos editando
+    let editingProduct = null;
+
     // Elementos
     const loginSection = document.getElementById('login-section');
     const registerSection = document.getElementById('register-section');
@@ -42,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.innerText = "Verificando..."; btn.disabled = true;
 
             try {
-                // Tenta conectar no Banco
                 const res = await fetch('/api/auth', {
                     method: 'POST',
                     body: JSON.stringify({ action: 'login', email, password })
@@ -109,12 +111,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- CARREGAR DADOS ---
     async function loadDashboardData() {
         const products = await getProducts();
         renderTable(products);
         updateStats();
-        setupProductForm();
+        setupProductForm(); // Configura o formulário
         updateGroupSelect(products);
     }
 
@@ -125,12 +126,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${p.group || p.group_name || '-'}</td>
                 <td>${p.name}</td>
                 <td>R$ ${parseFloat(p.price).toFixed(2)}</td>
-                <td>
+                <td style="display:flex; gap:5px;">
+                   <button class="action-btn btn-edit" data-id="${p.id}" style="background-color:#F59E0B; color:white;">Editar</button>
                    <button class="action-btn btn-delete" data-id="${p.id}">Excluir</button>
                 </td>
             </tr>
         `).join('');
 
+        // Listener Excluir
         tbody.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 if(confirm('Apagar produto?')) {
@@ -139,9 +142,57 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
+
+        // Listener Editar
+        tbody.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = e.target.dataset.id;
+                const product = products.find(p => String(p.id) === String(id));
+                if(product) {
+                    fillFormForEdit(product);
+                }
+            });
+        });
     }
 
-    // --- FUNÇÃO NOVA: COMPRESSÃO DE IMAGEM ---
+    // --- FUNÇÃO PARA PREENCHER FORM NA EDIÇÃO ---
+    function fillFormForEdit(product) {
+        editingProduct = product; // Salva quem estamos editando
+        
+        document.getElementById('product-name').value = product.name;
+        document.getElementById('product-price').value = product.price;
+        document.getElementById('product-description').value = product.description;
+        
+        // Tenta selecionar o grupo
+        const select = document.getElementById('product-group');
+        const groupName = product.group || product.group_name;
+        select.value = groupName;
+        // Se não tiver no select, põe no input de novo grupo
+        if(select.value !== groupName) {
+            document.getElementById('new-group').value = groupName;
+        }
+
+        // Mostra as imagens atuais no preview
+        const previewDiv = document.getElementById('image-preview');
+        previewDiv.innerHTML = '';
+        if(product.images && product.images.length) {
+            product.images.forEach(url => {
+                const img = document.createElement('img');
+                img.src = url;
+                img.style.height = '60px'; img.style.width = '60px'; img.style.objectFit = 'cover';
+                img.style.borderRadius = '8px'; img.style.border = '1px solid #ddd';
+                previewDiv.appendChild(img);
+            });
+        }
+
+        // Muda o texto do botão
+        const formBtn = document.querySelector('#product-form button[type="submit"]');
+        formBtn.innerText = "Salvar Alterações";
+        
+        // Rola a tela pra cima
+        document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
+    }
+
     function fileToBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -152,10 +203,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    const MAX_WIDTH = 800;
-                    const MAX_HEIGHT = 800;
-                    let width = img.width;
-                    let height = img.height;
+                    const MAX_WIDTH = 800; const MAX_HEIGHT = 800;
+                    let width = img.width; let height = img.height;
 
                     if (width > height) {
                         if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
@@ -163,8 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
                     }
 
-                    canvas.width = width;
-                    canvas.height = height;
+                    canvas.width = width; canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
                     resolve(canvas.toDataURL('image/jpeg', 0.7));
                 };
@@ -178,22 +226,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const newForm = form.cloneNode(true);
         form.parentNode.replaceChild(newForm, form);
 
-        // --- PREVIEW DAS IMAGENS (NOVIDADE) ---
         const imageInput = newForm.querySelector('#product-images');
         const previewDiv = document.getElementById('image-preview');
         
         imageInput.addEventListener('change', function() {
-            previewDiv.innerHTML = ''; // Limpa anteriores
+            previewDiv.innerHTML = ''; 
             Array.from(this.files).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const img = document.createElement('img');
                     img.src = e.target.result;
-                    img.style.height = '60px';
-                    img.style.width = '60px';
-                    img.style.objectFit = 'cover';
-                    img.style.borderRadius = '8px';
-                    img.style.border = '1px solid #ddd';
+                    img.style.height = '60px'; img.style.width = '60px'; img.style.objectFit = 'cover';
+                    img.style.borderRadius = '8px'; img.style.border = '1px solid #ddd';
                     previewDiv.appendChild(img);
                 }
                 reader.readAsDataURL(file);
@@ -207,27 +251,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const name = document.getElementById('product-name').value;
-                const price = parseFloat(document.getElementById('product-price').value);
+                const price = parseFloat(document.getElementById('product-price').value); // Se vazio vira NaN
                 const desc = document.getElementById('product-description').value;
                 const group = document.getElementById('new-group').value || document.getElementById('product-group').value || 'Geral';
                 
+                // Lógica da Imagem no Edit
                 let images = [];
+                // 1. Se tem novas fotos selecionadas, usa elas
                 if(imageInput.files.length > 0) {
                     const promises = Array.from(imageInput.files).map(fileToBase64);
                     images = await Promise.all(promises);
+                } 
+                // 2. Se não tem novas fotos, MAS estamos editando, mantém as antigas
+                else if (editingProduct && editingProduct.images) {
+                    images = editingProduct.images;
                 }
+                
+                // ID: Se editando, usa o ID dele. Se novo, cria ID.
+                const id = editingProduct ? editingProduct.id : Date.now().toString();
 
-                const newProd = { id: Date.now().toString(), name, price, description: desc, group, images };
+                const newProd = { 
+                    id: id, 
+                    name, 
+                    price: isNaN(price) ? 0 : price, // Salva 0 se estiver em branco
+                    description: desc, 
+                    group, 
+                    images 
+                };
+                
                 await addProductToDB(newProd);
                 
                 alert('Produto Salvo!');
                 newForm.reset();
                 previewDiv.innerHTML = '';
+                editingProduct = null; // Limpa o estado de edição
+                btn.innerText = "Salvar Produto"; // Volta texto original
                 loadDashboardData();
             } catch(e) {
                 alert('Erro ao salvar: ' + e.message);
             } finally {
-                btn.innerText = "Salvar Produto"; btn.disabled = false;
+                if(!editingProduct) btn.innerText = "Salvar Produto"; 
+                btn.disabled = false;
             }
         });
     }
