@@ -22,7 +22,11 @@ function renderProductSliders(products) {
     groupedProducts[groupName].push(product);
   });
 
-  Object.entries(groupedProducts).forEach(([group, groupProducts]) => {
+  // --- ORDEM ALFABÉTICA DOS GRUPOS ---
+  const sortedGroups = Object.keys(groupedProducts).sort((a, b) => a.localeCompare(b));
+
+  sortedGroups.forEach(group => {
+    const groupProducts = groupedProducts[group];
     const groupId = `group-${group.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
 
     const groupSection = document.createElement('div');
@@ -72,15 +76,12 @@ function renderProductSliders(products) {
           `;
       }
 
-      // --- LÓGICA DO PREÇO ---
-      // Se tiver valor e for maior que zero, mostra. Se não, mostra vazio.
+      // Preço: esconde se for zero
       const priceVal = parseFloat(product.price);
       let priceHTML = '';
       if (priceVal > 0) {
           priceHTML = `<p class="price">R$ ${priceVal.toFixed(2)}</p>`;
       } else {
-          // Opcional: Se quiser escrever algo como "Sob Consulta", coloque aqui.
-          // Por enquanto deixei vazio como pediu.
           priceHTML = `<p class="price" style="visibility:hidden">.</p>`; 
       }
 
@@ -200,7 +201,6 @@ function setupGlobalClicks(products) {
 
                 updateModalImage();
                 
-                // Lógica de preço no modal também
                 const priceVal = parseFloat(product.price);
                 const priceText = (priceVal > 0) ? `R$ ${priceVal.toFixed(2)}` : '';
 
@@ -230,7 +230,11 @@ function initializeSidebar(products) {
     const sidebarGroups = document.getElementById('sidebar-groups');
     const filterInput = document.getElementById('sidebar-search-input');
     if(!sidebarGroups) return;
-    const groups = Array.from(new Set(products.map(p => p.group || p.group_name))).filter(Boolean);
+
+    // --- ORDEM ALFABÉTICA NA SIDEBAR ---
+    let groups = Array.from(new Set(products.map(p => p.group || p.group_name))).filter(Boolean);
+    groups.sort((a, b) => a.localeCompare(b));
+
     sidebarGroups.innerHTML = groups.map(g => {
         const groupId = `group-${g.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
         return `<a href="#" class="sidebar-group-item" data-target="${groupId}">${g}</a>`;

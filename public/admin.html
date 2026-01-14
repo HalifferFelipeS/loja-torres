@@ -92,27 +92,34 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                             <div class="form-group">
                                 <label>Preço (R$)</label>
-                                <input type="number" id="product-price" step="0.01" required>
+                                <input type="number" id="product-price" step="0.01">
                             </div>
                             <div class="form-group">
-                                <label>Foto do Produto</label>
-                                <input type="file" id="product-images" accept="image/*">
+                                <label>Fotos do Produto</label>
+                                <input type="file" id="product-images" accept="image/*" multiple>
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label>Descrição Detalhada</label>
-                            <textarea id="product-description" rows="3" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;"></textarea>
+                            <textarea id="product-description" rows="3"></textarea>
                         </div>
                         
-                        <div id="image-preview" style="margin-bottom: 15px;"></div>
+                        <div id="image-preview" style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
 
                         <button type="submit" class="buy-button">Salvar Produto</button>
                     </form>
                 </div>
 
                 <div class="admin-card product-list">
-                    <h2>Estoque Atual</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                        <h2>Estoque Atual</h2>
+                        <div class="admin-search-box">
+                            <input type="text" id="admin-search-input" placeholder="Pesquisar por nome ou grupo...">
+                            <span>🔍</span>
+                        </div>
+                    </div>
+
                     <div style="overflow-x: auto;">
                         <table id="product-table" class="admin-table">
                             <thead>
@@ -126,6 +133,12 @@
                             <tbody>
                                 </tbody>
                         </table>
+                    </div>
+
+                    <div id="pagination-controls" class="pagination-container">
+                        <button id="prev-page" class="page-btn" disabled>&lt; Anterior</button>
+                        <span id="page-info">Página 1</span>
+                        <button id="next-page" class="page-btn">Próxima &gt;</button>
                     </div>
                 </div>
             </div>

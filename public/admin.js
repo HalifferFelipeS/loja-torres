@@ -3,6 +3,12 @@ import { getInteractionStats } from './modules/adminStats.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     let editingProduct = null;
+    
+    // --- ESTADO DA LISTA (PAGINAÇÃO E PESQUISA) ---
+    let allProducts = []; // Guarda todos os produtos
+    let currentPage = 1;
+    const itemsPerPage = 15;
+    let searchTerm = "";
 
     // Elementos
     const loginSection = document.getElementById('login-section');
@@ -25,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkLoginStatus();
 
+    // --- LOGINS E REGISTROS (MANTIDO) ---
     if(loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -83,15 +90,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadDashboardData() {
         const products = await getProducts();
-        renderTable(products);
+        // Ordena ALFABETICAMENTE por grupo e depois por nome
+        allProducts = products.sort((a, b) => {
+            const groupA = (a.group || a.group_name || '').toLowerCase();
+            const groupB = (b.group || b.group_name || '').toLowerCase();
+            if (groupA < groupB) return -1;
+            if (groupA > groupB) return 1;
+            return a.name.localeCompare(b.name);
+        });
+
+        filterAndRenderTable(); // Renderiza com a lógica nova
         updateStats();
         setupProductForm();
-        updateGroupSelect(products);
+        updateGroupSelect(allProducts);
+        setupSearchAndPagination();
     }
 
-    function renderTable(products) {
+    // --- NOVA LÓGICA DE FILTRO E PAGINAÇÃO ---
+    function setupSearchAndPagination() {
+        const searchInput = document.getElementById('admin-search-input');
+        const prevBtn = document.getElementById('prev-page');
+        const nextBtn = document.getElementById('next-page');
+
+        // Pesquisa em tempo real
+        searchInput.addEventListener('input', (e) => {
+            searchTerm = e.target.value.toLowerCase();
+            currentPage = 1; // Volta pra primeira página ao pesquisar
+            filterAndRenderTable();
+        });
+
+        // Botões de página
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                filterAndRenderTable();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            currentPage++;
+            filterAndRenderTable();
+        });
+    }
+
+    function filterAndRenderTable() {
+        // 1. Filtrar
+        const filtered = allProducts.filter(p => {
+            const name = p.name.toLowerCase();
+            const group = (p.group || p.group_name || '').toLowerCase();
+            return name.includes(searchTerm) || group.includes(searchTerm);
+        });
+
+        // 2. Paginar
+        const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const visibleItems = filtered.slice(start, end);
+
+        // 3. Renderizar Tabela
         const tbody = document.querySelector('#product-table tbody');
-        tbody.innerHTML = products.map(p => `
+        tbody.innerHTML = visibleItems.map(p => `
             <tr>
                 <td title="${p.group || '-'}">${p.group || p.group_name || '-'}</td>
                 <td title="${p.name}">${p.name}</td>
@@ -102,6 +162,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
             </tr>
         `).join('');
+
+        // 4. Atualizar Controles de Página
+        document.getElementById('page-info').innerText = `Página ${currentPage} de ${totalPages}`;
+        document.getElementById('prev-page').disabled = currentPage === 1;
+        document.getElementById('next-page').disabled = currentPage === totalPages;
+
+        // Reatribuir eventos aos botões da tabela
+        attachTableEvents(visibleItems);
+    }
+
+    function attachTableEvents(currentItems) {
+        const tbody = document.querySelector('#product-table tbody');
 
         tbody.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', async (e) => {
@@ -115,12 +187,13 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.querySelectorAll('.btn-edit').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const id = e.target.dataset.id;
-                const product = products.find(p => String(p.id) === String(id));
+                const product = currentItems.find(p => String(p.id) === String(id));
                 if(product) fillFormForEdit(product);
             });
         });
     }
 
+    // --- EDIÇÃO (MANTIDO) ---
     function fillFormForEdit(product) {
         editingProduct = product;
         document.getElementById('product-name').value = product.name;
@@ -146,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formBtn = document.querySelector('#product-form button[type="submit"]');
         formBtn.innerText = "Salvar Alterações (Modo Edição)";
-        formBtn.style.backgroundColor = "#F59E0B"; // Laranja para indicar edição
+        formBtn.style.backgroundColor = "#F59E0B"; 
         
         document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
     }
@@ -208,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const name = document.getElementById('product-name').value;
                 const priceVal = document.getElementById('product-price').value;
-                const price = priceVal === "" ? 0 : parseFloat(priceVal); // Permite 0 ou vazio
+                const price = priceVal === "" ? 0 : parseFloat(priceVal);
                 
                 const desc = document.getElementById('product-description').value;
                 const group = document.getElementById('new-group').value || document.getElementById('product-group').value || 'Geral';
@@ -231,9 +304,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 previewDiv.innerHTML = '';
                 editingProduct = null;
                 
-                // Reseta botão
                 btn.innerText = "Salvar Produto";
-                btn.style.backgroundColor = ""; // Volta a cor original
+                btn.style.backgroundColor = "";
                 
                 loadDashboardData();
             } catch(e) {
@@ -246,10 +318,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateGroupSelect(products) {
-        const groups = new Set(products.map(p => p.group || p.group_name));
+        // --- ORDEM ALFABÉTICA NO SELECT ---
+        let groups = Array.from(new Set(products.map(p => p.group || p.group_name))).filter(Boolean);
+        groups.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
         const select = document.getElementById('product-group');
         select.innerHTML = '<option value="">Selecione...</option>';
-        groups.forEach(g => { if(g) select.innerHTML += `<option value="${g}">${g}</option>`; });
+        groups.forEach(g => { select.innerHTML += `<option value="${g}">${g}</option>`; });
     }
 
     async function updateStats() {
