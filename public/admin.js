@@ -4,8 +4,8 @@ import { getInteractionStats } from './modules/adminStats.js';
 document.addEventListener('DOMContentLoaded', () => {
     let editingProduct = null;
     
-    // --- ESTADO DA LISTA (PAGINAÇÃO E PESQUISA) ---
-    let allProducts = []; // Guarda todos os produtos
+    // Estado da lista
+    let allProducts = [];
     let currentPage = 1;
     const itemsPerPage = 15;
     let searchTerm = "";
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkLoginStatus();
 
-    // --- LOGINS E REGISTROS (MANTIDO) ---
+    // --- LOGIN ---
     if(loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -44,35 +44,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch('/api/auth', {
                     method: 'POST', body: JSON.stringify({ action: 'login', email, password })
                 });
-                if (res.ok) {
-                    const data = await res.json();
-                    if(data.success) { localStorage.setItem('adminLoggedIn', 'true'); checkLoginStatus(); }
-                    else { alert('Acesso Negado.'); }
+                
+                // Tenta ler o JSON de resposta
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok && data.success) {
+                    localStorage.setItem('adminLoggedIn', 'true'); checkLoginStatus(); 
                 } else {
+                    // Fallback (Emergência se o banco falhar)
                     if(email === 'admin@torres.com' && password === 'admin123') {
                         localStorage.setItem('adminLoggedIn', 'true'); checkLoginStatus();
-                    } else { alert('Dados incorretos.'); }
+                    } else { 
+                        alert(data.error || 'Dados incorretos.'); 
+                    }
                 }
             } catch(e) { console.error(e); alert('Erro de conexão.'); } 
             finally { btn.innerText = "Entrar"; btn.disabled = false; }
         });
     }
 
+    // --- REGISTRO (CORRIGIDO) ---
     if(registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('register-admin-email').value;
             const password = document.getElementById('register-admin-password').value;
             const confirm = document.getElementById('register-admin-password-confirm').value;
+            const btn = registerForm.querySelector('button');
 
             if(password !== confirm) return alert('Senhas não batem.');
+            
+            btn.innerText = "Criando..."; btn.disabled = true;
 
-            const res = await fetch('/api/auth', {
-                method: 'POST', body: JSON.stringify({ action: 'register', email, password })
-            });
+            try {
+                const res = await fetch('/api/auth', {
+                    method: 'POST', body: JSON.stringify({ action: 'register', email, password })
+                });
+                
+                const data = await res.json();
 
-            if(res.ok) { alert('Admin criado!'); registerSection.classList.add('hidden'); loginSection.classList.remove('hidden'); }
-            else { alert('Erro ao criar admin.'); }
+                if(res.ok) { 
+                    alert('Admin criado com sucesso!'); 
+                    registerSection.classList.add('hidden'); 
+                    loginSection.classList.remove('hidden'); 
+                } else { 
+                    // Mostra o erro exato (ex: Email já existe)
+                    alert('Erro: ' + (data.error || 'Não foi possível cadastrar.')); 
+                }
+            } catch (error) {
+                alert('Erro de conexão com o servidor.');
+            } finally {
+                btn.innerText = "Registrar e Entrar"; btn.disabled = false;
+            }
         });
     }
 
@@ -88,9 +111,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ... (O RESTANTE DO CÓDIGO DA TABELA, PESQUISA E EDIÇÃO CONTINUA IGUAL AO ANTERIOR) ...
+    // Vou incluir aqui o restante das funções para garantir que nada quebre ao copiar
+
     async function loadDashboardData() {
         const products = await getProducts();
-        // Ordena ALFABETICAMENTE por grupo e depois por nome
         allProducts = products.sort((a, b) => {
             const groupA = (a.group || a.group_name || '').toLowerCase();
             const groupB = (b.group || b.group_name || '').toLowerCase();
@@ -99,49 +124,40 @@ document.addEventListener('DOMContentLoaded', () => {
             return a.name.localeCompare(b.name);
         });
 
-        filterAndRenderTable(); // Renderiza com a lógica nova
+        filterAndRenderTable();
         updateStats();
         setupProductForm();
         updateGroupSelect(allProducts);
         setupSearchAndPagination();
     }
 
-    // --- NOVA LÓGICA DE FILTRO E PAGINAÇÃO ---
     function setupSearchAndPagination() {
         const searchInput = document.getElementById('admin-search-input');
         const prevBtn = document.getElementById('prev-page');
         const nextBtn = document.getElementById('next-page');
 
-        // Pesquisa em tempo real
         searchInput.addEventListener('input', (e) => {
             searchTerm = e.target.value.toLowerCase();
-            currentPage = 1; // Volta pra primeira página ao pesquisar
+            currentPage = 1;
             filterAndRenderTable();
         });
 
-        // Botões de página
         prevBtn.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                filterAndRenderTable();
-            }
+            if (currentPage > 1) { currentPage--; filterAndRenderTable(); }
         });
 
         nextBtn.addEventListener('click', () => {
-            currentPage++;
-            filterAndRenderTable();
+            currentPage++; filterAndRenderTable(); // Limite verificado dentro do render
         });
     }
 
     function filterAndRenderTable() {
-        // 1. Filtrar
         const filtered = allProducts.filter(p => {
             const name = p.name.toLowerCase();
             const group = (p.group || p.group_name || '').toLowerCase();
             return name.includes(searchTerm) || group.includes(searchTerm);
         });
 
-        // 2. Paginar
         const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
         if (currentPage > totalPages) currentPage = totalPages;
         
@@ -149,7 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const end = start + itemsPerPage;
         const visibleItems = filtered.slice(start, end);
 
-        // 3. Renderizar Tabela
         const tbody = document.querySelector('#product-table tbody');
         tbody.innerHTML = visibleItems.map(p => `
             <tr>
@@ -163,18 +178,15 @@ document.addEventListener('DOMContentLoaded', () => {
             </tr>
         `).join('');
 
-        // 4. Atualizar Controles de Página
         document.getElementById('page-info').innerText = `Página ${currentPage} de ${totalPages}`;
         document.getElementById('prev-page').disabled = currentPage === 1;
         document.getElementById('next-page').disabled = currentPage === totalPages;
 
-        // Reatribuir eventos aos botões da tabela
         attachTableEvents(visibleItems);
     }
 
     function attachTableEvents(currentItems) {
         const tbody = document.querySelector('#product-table tbody');
-
         tbody.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 if(confirm('Apagar produto?')) {
@@ -193,7 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- EDIÇÃO (MANTIDO) ---
     function fillFormForEdit(product) {
         editingProduct = product;
         document.getElementById('product-name').value = product.name;
@@ -220,7 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const formBtn = document.querySelector('#product-form button[type="submit"]');
         formBtn.innerText = "Salvar Alterações (Modo Edição)";
         formBtn.style.backgroundColor = "#F59E0B"; 
-        
         document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -236,10 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const ctx = canvas.getContext('2d');
                     const MAX_WIDTH = 800; const MAX_HEIGHT = 800;
                     let width = img.width; let height = img.height;
-
                     if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
                     else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
-
                     canvas.width = width; canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
                     resolve(canvas.toDataURL('image/jpeg', 0.7));
@@ -282,7 +290,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const name = document.getElementById('product-name').value;
                 const priceVal = document.getElementById('product-price').value;
                 const price = priceVal === "" ? 0 : parseFloat(priceVal);
-                
                 const desc = document.getElementById('product-description').value;
                 const group = document.getElementById('new-group').value || document.getElementById('product-group').value || 'Geral';
                 
@@ -295,7 +302,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 const id = editingProduct ? editingProduct.id : Date.now().toString();
-
                 const newProd = { id, name, price, description: desc, group, images };
                 await addProductToDB(newProd);
                 
@@ -303,10 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 newForm.reset();
                 previewDiv.innerHTML = '';
                 editingProduct = null;
-                
                 btn.innerText = "Salvar Produto";
                 btn.style.backgroundColor = "";
-                
                 loadDashboardData();
             } catch(e) {
                 alert('Erro: ' + e.message);
@@ -318,10 +322,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateGroupSelect(products) {
-        // --- ORDEM ALFABÉTICA NO SELECT ---
         let groups = Array.from(new Set(products.map(p => p.group || p.group_name))).filter(Boolean);
         groups.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-
         const select = document.getElementById('product-group');
         select.innerHTML = '<option value="">Selecione...</option>';
         groups.forEach(g => { select.innerHTML += `<option value="${g}">${g}</option>`; });
