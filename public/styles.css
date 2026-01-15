@@ -30,7 +30,9 @@ body {
 
 .hidden { display: none !important; }
 
-/* HEADER */
+/* =========================================
+   HEADER
+   ========================================= */
 header {
   height: var(--header-height);
   background-color: var(--bg-white);
@@ -40,12 +42,25 @@ header {
 .header-content { max-width: 100%; padding: 0 2rem; height: 100%; display: flex; align-items: center; justify-content: space-between; }
 .logo-area { display: flex; align-items: center; gap: 15px; }
 .header-logo { height: 60px; width: auto; }
-.brand-text { display: flex; flex-direction: column; cursor: pointer; user-select: none; }
-.brand-text h1 { font-size: 1.5rem; color: var(--text-dark); font-weight: 800; line-height: 1; text-transform: uppercase; border-bottom: 3px solid var(--primary); display: inline-block; }
+
+/* CORREÇÃO 1: MOUSE PADRÃO (SETA) PARA ESCONDER O CLIQUE */
+.brand-text { 
+    display: flex; 
+    flex-direction: column; 
+    cursor: default; /* ANTES ERA 'pointer', AGORA É 'default' (SETA) */
+    user-select: none; 
+}
+.brand-text h1 { 
+    font-size: 1.5rem; color: var(--text-dark); font-weight: 800; 
+    line-height: 1; text-transform: uppercase; border-bottom: 3px solid var(--primary); display: inline-block; 
+}
+
 .admin-link { text-decoration: none; color: var(--text-light); font-size: 0.85rem; border: 1px solid var(--border-color); padding: 8px 15px; border-radius: 20px; transition: all 0.3s; opacity: 0; pointer-events: none; }
 .admin-link.revealed { opacity: 1; pointer-events: auto; background-color: #000; color: var(--primary); border-color: #000; }
 
-/* LAYOUT */
+/* =========================================
+   LAYOUT & SIDEBAR
+   ========================================= */
 .layout-container { display: flex; flex: 1; }
 .sidebar { width: var(--sidebar-width); background-color: var(--bg-white); border-right: 1px solid var(--border-color); position: fixed; top: var(--header-height); bottom: 0; left: 0; overflow-y: auto; z-index: 900; padding: 1.5rem 1rem; }
 .sidebar h3 { font-size: 0.9rem; text-transform: uppercase; color: var(--text-dark); font-weight: 800; margin-bottom: 1rem; padding-left: 10px; border-left: 4px solid var(--primary); }
@@ -56,7 +71,9 @@ header {
 .sidebar-group-item.active { background-color: var(--primary); color: var(--text-on-primary); font-weight: 700; border-radius: var(--radius); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 main { margin-left: var(--sidebar-width); padding: 2rem; width: calc(100% - var(--sidebar-width)); }
 
-/* LOJA - UI */
+/* =========================================
+   LOJA - UI
+   ========================================= */
 #search-container { max-width: 800px; margin: 0 auto 3rem; }
 .search-box { display: flex; border: 2px solid var(--primary); border-radius: 30px; overflow: hidden; background: #fff; }
 #search-input { flex: 1; padding: 15px 20px; border: none; font-size: 1rem; outline: none; }
@@ -93,10 +110,19 @@ main { margin-left: var(--sidebar-width); padding: 2rem; width: calc(100% - var(
 .modal-details h3 { font-size: 1.8rem; margin-bottom: 1rem; color: #333; }
 .modal-details .price { font-size: 2rem; color: var(--primary); margin-bottom: 1.5rem; font-weight: 800; }
 .modal-details p { line-height: 1.6; color: #666; font-size: 1rem; }
+
 footer { background-color: #222; padding: 3rem 2rem; text-align: center; color: #ccc; border-top: 4px solid var(--primary); margin-top: auto; margin-left: var(--sidebar-width); }
 .footer-content { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 
-/* PAINEL ADMIN */
+/* CORREÇÃO 2: LOGO DO RODAPÉ COLORIDO */
+.footer-content img {
+    filter: none !important;
+    opacity: 1 !important;
+}
+
+/* =========================================
+   PAINEL ADMIN
+   ========================================= */
 #login-section, #register-section { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 60vh; padding: 2rem; }
 #login-section h2, #register-section h2 { margin-bottom: 1.5rem; color: var(--text-dark); font-size: 2rem; font-weight: 800; }
 #admin-login-form, #admin-register-form { background-color: #ffffff; padding: 2.5rem; border-radius: 16px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); border: 1px solid #f0f0f0; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 1.2rem; }
@@ -111,14 +137,13 @@ footer { background-color: #222; padding: 3rem 2rem; text-align: center; color: 
 .admin-card { background: #fff; border-radius: 16px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; margin-bottom: 2rem; }
 .admin-card h2 { font-size: 1.4rem; color: var(--text-dark); margin-bottom: 1.5rem; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px; }
 
-/* INPUTS DO FORM ADMIN */
 #product-form form { display: flex; flex-direction: column; gap: 1.2rem; }
 #product-form .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
 #product-form input[type="text"], #product-form input[type="number"], #product-form select, #product-form textarea { width: 100%; padding: 12px 20px; border: 2px solid #e9ecef; border-radius: 20px; font-size: 0.95rem; outline: none; transition: all 0.3s; background-color: #fafafa; font-family: 'Inter', sans-serif; }
 #product-form input:focus, #product-form select:focus, #product-form textarea:focus { border-color: var(--primary); background-color: #fff; box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.15); }
 #product-form button[type="submit"] { margin-top: 10px; border-radius: 30px; font-size: 1rem; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; }
 
-/* --- PESQUISA NO ADMIN (NOVO) --- */
+/* PESQUISA NO ADMIN */
 .admin-search-box { display: flex; align-items: center; border: 2px solid #e9ecef; border-radius: 20px; padding: 5px 15px; background: #fafafa; width: 100%; max-width: 300px; }
 .admin-search-box:focus-within { border-color: var(--primary); background: #fff; }
 .admin-search-box input { border: none; background: transparent; outline: none; width: 100%; padding: 5px; font-size: 0.9rem; }
@@ -135,7 +160,7 @@ footer { background-color: #222; padding: 3rem 2rem; text-align: center; color: 
 .btn-edit { background-color: #F59E0B; color: white; }
 .btn-delete { background-color: #fee2e2; color: #dc2626; }
 
-/* --- PAGINAÇÃO (NOVO) --- */
+/* PAGINAÇÃO */
 .pagination-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #f0f0f0; }
 .page-btn { padding: 8px 16px; background-color: #fff; border: 1px solid #ddd; border-radius: 20px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
 .page-btn:hover:not(:disabled) { background-color: var(--primary); border-color: var(--primary); }
