@@ -1,17 +1,32 @@
-export async function getInteractionStats() {
-  try {
-    // MUDANÇA AQUI: para /api/stats
-    const res = await fetch('/api/stats');
-    return await res.json();
-  } catch (e) {
-    return { clicks: 0, views: 0 };
-  }
-}
-
+// Envia o contador para o servidor
 export async function incrementClicks() {
-  fetch('/api/stats', { method: 'POST', body: JSON.stringify({ type: 'click' }) }).catch(console.error);
+    try {
+        await fetch('/api/stats', {
+            method: 'POST',
+            body: JSON.stringify({ type: 'click' })
+        });
+    } catch (e) {
+        console.error("Erro ao contar clique", e);
+    }
 }
 
 export async function incrementViews() {
-  fetch('/api/stats', { method: 'POST', body: JSON.stringify({ type: 'view' }) }).catch(console.error);
+    try {
+        await fetch('/api/stats', {
+            method: 'POST',
+            body: JSON.stringify({ type: 'view' })
+        });
+    } catch (e) {
+        console.error("Erro ao contar view", e);
+    }
+}
+
+export async function getInteractionStats() {
+    try {
+        const res = await fetch('/api/stats');
+        if (!res.ok) return { clicks: 0, views: 0 };
+        return await res.json();
+    } catch (e) {
+        return { clicks: 0, views: 0 };
+    }
 }

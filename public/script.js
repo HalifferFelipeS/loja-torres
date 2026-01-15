@@ -1,9 +1,12 @@
 import { getProducts } from './modules/product.js';
-import { incrementClicks } from './modules/adminStats.js';
+import { incrementClicks, incrementViews } from './modules/adminStats.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const products = await getProducts();
   
+  // Conta uma visualização de página assim que carrega
+  incrementViews();
+
   renderProductSliders(products);
   initializeSidebar(products);
   initializeSearch(products);
@@ -22,7 +25,6 @@ function renderProductSliders(products) {
     groupedProducts[groupName].push(product);
   });
 
-  // --- ORDEM ALFABÉTICA DOS GRUPOS ---
   const sortedGroups = Object.keys(groupedProducts).sort((a, b) => a.localeCompare(b));
 
   sortedGroups.forEach(group => {
@@ -33,11 +35,7 @@ function renderProductSliders(products) {
     groupSection.className = 'product-group';
     groupSection.id = groupId;
     
-    groupSection.innerHTML = `
-        <div class="group-header">
-            <h2 class="group-title">${group}</h2>
-        </div>
-    `;
+    groupSection.innerHTML = `<div class="group-header"><h2 class="group-title">${group}</h2></div>`;
 
     const sliderContainer = document.createElement('div');
     sliderContainer.className = 'slider-container';
@@ -76,14 +74,8 @@ function renderProductSliders(products) {
           `;
       }
 
-      // Preço: esconde se for zero
       const priceVal = parseFloat(product.price);
-      let priceHTML = '';
-      if (priceVal > 0) {
-          priceHTML = `<p class="price">R$ ${priceVal.toFixed(2)}</p>`;
-      } else {
-          priceHTML = `<p class="price" style="visibility:hidden">.</p>`; 
-      }
+      let priceHTML = (priceVal > 0) ? `<p class="price">R$ ${priceVal.toFixed(2)}</p>` : `<p class="price" style="visibility:hidden">.</p>`;
 
       card.innerHTML = `
         <div class="product-carousel" data-id="${product.id}" data-total="${images.length}">
@@ -117,7 +109,6 @@ function setupCardCarouselEvents() {
         const track = carousel.querySelector('.carousel-images');
         const total = parseInt(carousel.getAttribute('data-total'));
         let current = 0;
-
         carousel.querySelectorAll('.slider-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -175,6 +166,7 @@ function setupGlobalClicks(products) {
     document.getElementById('product-list').addEventListener('click', (e) => {
         const target = e.target;
         
+        // 1. CLIQUE NA LISTA PRINCIPAL
         if (target.classList.contains('buy-button')) {
             const id = target.getAttribute('data-id');
             const product = products.find(p => String(p.id) === String(id));
@@ -182,6 +174,7 @@ function setupGlobalClicks(products) {
             return;
         }
 
+        // 2. ABRIR MODAL
         const carouselClick = target.closest('.product-carousel');
         if (carouselClick && !target.classList.contains('slider-btn')) {
             const id = carouselClick.getAttribute('data-id');
@@ -198,40 +191,48 @@ function setupGlobalClicks(products) {
                     prevBtn.classList.add('hidden');
                     nextBtn.classList.add('hidden');
                 }
-
                 updateModalImage();
                 
                 const priceVal = parseFloat(product.price);
                 const priceText = (priceVal > 0) ? `R$ ${priceVal.toFixed(2)}` : '';
 
+                // GERA O BOTÃO COM ID PARA ADICIONAR O EVENTO DEPOIS
                 modalDetails.innerHTML = `
                     <h3>${product.name}</h3>
                     <p class="price">${priceText}</p>
                     <p>${product.description || 'Sem descrição.'}</p>
-                    <button class="buy-button" onclick="window.open('https://wa.me/554832428800?text=Interesse em ${encodeURIComponent(product.name)}', '_blank')">Pedir no WhatsApp</button>
+                    <button id="modal-whatsapp-btn" class="buy-button">Pedir no WhatsApp</button>
                 `;
                 
+                // 3. CLIQUE DENTRO DO MODAL
+                document.getElementById('modal-whatsapp-btn').onclick = () => {
+                    redirectToWhatsApp(product);
+                };
+                
                 modal.style.display = 'flex';
-                incrementClicks();
+                // (Opcional: se quiser contar 'abertura de modal' como view, chame incrementViews() aqui também)
             }
         }
     });
 }
 
+// FUNÇÃO CORRIGIDA: AGORA CONTA O CLIQUE
 function redirectToWhatsApp(product) {
+  incrementClicks(); // <--- O CONTADOR ESTÁ AQUI
+  
   const priceVal = parseFloat(product.price);
   const priceMsg = (priceVal > 0) ? `(R$ ${priceVal.toFixed(2)})` : '(Preço a consultar)';
-  
   const message = encodeURIComponent(`Olá, vi no site e tenho interesse em: ${product.name} ${priceMsg}`);
+  
   window.open(`https://wa.me/554832428800?text=${message}`, '_blank');
 }
 
+// ... Restante das funções (initializeSidebar, etc) iguais ao anterior ...
 function initializeSidebar(products) {
     const sidebarGroups = document.getElementById('sidebar-groups');
     const filterInput = document.getElementById('sidebar-search-input');
     if(!sidebarGroups) return;
 
-    // --- ORDEM ALFABÉTICA NA SIDEBAR ---
     let groups = Array.from(new Set(products.map(p => p.group || p.group_name))).filter(Boolean);
     groups.sort((a, b) => a.localeCompare(b));
 
