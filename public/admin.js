@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemsPerPage = 15;
     let searchTerm = "";
 
-    // Elementos do DOM
     const loginSection = document.getElementById('login-section');
     const registerSection = document.getElementById('register-section');
     const dashboard = document.getElementById('admin-dashboard');
@@ -16,28 +15,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('admin-login-form');
     const registerForm = document.getElementById('admin-register-form');
     
-    // --- ATIVAR O ARRASTA E SOLTA (CORRIGIDO) ---
+    // --- ATIVAR O ARRASTA E SOLTA (ORDENAÇÃO) ---
     const previewContainer = document.getElementById('image-preview');
     if (previewContainer) {
-        if (typeof Sortable !== 'undefined') {
-            new Sortable(previewContainer, {
-                animation: 150,
-                
-                // --- O SEGREDO ESTÁ AQUI ---
-                forceFallback: true, // Ignora o navegador e força o arraste via JS
-                fallbackClass: 'sortable-fallback', // Classe visual enquanto arrasta
-                ghostClass: 'sortable-ghost', // Classe do "espaço vazio" onde vai cair
-                delay: 0, // Começa a arrastar na hora
-                
-                onStart: function () {
-                   document.body.style.cursor = 'grabbing';
-                },
-                onEnd: function () {
-                   document.body.style.cursor = 'default';
-                }
+        // Tenta iniciar o Sortable se disponível
+        if (window.Sortable) {
+            new window.Sortable(previewContainer, {
+                animation: 200,            // Suavidade do movimento
+                ghostClass: 'sortable-ghost', // Classe do espaço vazio
+                dragClass: 'sortable-drag',   // Classe do item sendo arrastado
+                forceFallback: true,       // OBRIGA O NAVEGADOR A USAR O NOSSO ARRASTE
+                delay: 0
             });
         } else {
-            console.warn('SortableJS não carregou. Verifique sua conexão.');
+            console.warn("Biblioteca Sortable não carregada.");
         }
     }
 
@@ -246,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const img = document.createElement('img');
         img.src = base64Url;
-        img.draggable = false; // Garante que a imagem não seja "salvável"
+        img.draggable = false; // Garante que a imagem não seja "arrastável" nativamente
         
         const removeBtn = document.createElement('div');
         removeBtn.className = 'remove-btn';
@@ -290,6 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const imageInput = newForm.querySelector('#product-images');
         
+        // --- SELEÇÃO DE NOVAS FOTOS ---
         imageInput.addEventListener('change', function() {
             Array.from(this.files).forEach(async file => {
                 const base64 = await fileToBase64(file);
@@ -312,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const desc = document.getElementById('product-description').value;
                 const group = document.getElementById('new-group').value || document.getElementById('product-group').value || 'Geral';
                 
-                // Pega as imagens na ordem visual
+                // --- PEGA A ORDEM VISUAL EXATA DA TELA ---
                 const previewItems = document.querySelectorAll('#image-preview img');
                 let images = Array.from(previewItems).map(img => img.src);
 
