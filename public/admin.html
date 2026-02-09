@@ -11,43 +11,49 @@
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
   <style>
-    /* Container das fotos */
+    /* Área das fotos */
     #image-preview {
         display: flex;
         gap: 15px;
-        flex-wrap: wrap;
+        flex-wrap: wrap; /* Permite cair para a linha de baixo */
         padding: 15px;
         border: 2px dashed #ccc;
         border-radius: 12px;
-        min-height: 120px;
+        min-height: 130px;
         background: #f9f9f9;
         align-items: flex-start;
     }
     
-    /* O item (cartãozinho) - AGORA COM FOTO NO BACKGROUND */
+    /* O "CARTÃO" DA FOTO (Sem tag IMG dentro, a foto é background) */
     .preview-item {
         position: relative;
-        width: 100px;  /* Tamanho Fixo */
-        height: 100px; /* Tamanho Fixo */
+        width: 100px;
+        height: 100px;
         border-radius: 8px;
         border: 1px solid #ddd;
         background-color: #fff;
-        background-size: contain;   /* Ajusta a foto */
-        background-repeat: no-repeat;
-        background-position: center;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        cursor: grab;
         
-        /* OBRIGATÓRIO PARA ARRASTAR EM TELAS TOUCH */
+        /* AQUI ESTÁ O SEGREDO: FOTO COMO FUNDO */
+        background-size: cover; 
+        background-position: center;
+        background-repeat: no-repeat;
+        
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        cursor: grab; /* Mãozinha aberta */
+        
+        /* OBRIGATÓRIO PARA NÃO TRAVAR O ARRASTE */
+        user-select: none;
         touch-action: none; 
     }
     
+    /* Quando estiver segurando o item */
     .preview-item:active {
         cursor: grabbing;
-        border-color: #FFD700; /* Amarelo ao segurar */
+        border: 2px solid #FFD700; /* Borda amarela ao segurar */
+        transform: scale(1.05);
     }
 
-    /* Botão Remover */
+    /* Botão X de remover */
     .remove-btn {
         position: absolute;
         top: -8px;
@@ -65,22 +71,23 @@
         cursor: pointer;
         border: 2px solid #fff;
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        z-index: 10;
     }
     .remove-btn:hover { background: #cc0000; transform: scale(1.1); }
 
-    /* Classes visuais do SortableJS */
+    /* Espaço vazio onde a foto vai cair */
     .sortable-ghost {
-        opacity: 0.3;
-        background-color: #e0e0e0 !important;
-        background-image: none !important; /* Remove foto do fantasma */
+        opacity: 0.2;
+        background-color: #ddd !important;
+        background-image: none !important; /* Remove a foto do fantasma */
         border: 2px dashed #999;
     }
 
+    /* A foto enquanto está sendo arrastada */
     .sortable-drag {
-        cursor: grabbing;
         opacity: 1 !important;
         background-color: #fff;
-        transform: scale(1.1);
+        cursor: grabbing;
         z-index: 100;
         box-shadow: 0 15px 30px rgba(0,0,0,0.3);
     }
@@ -175,7 +182,7 @@
                             <div class="form-group">
                                 <label>Adicionar Fotos</label>
                                 <input type="file" id="product-images" accept="image/*" multiple>
-                                <small style="color:#666; font-size:0.8rem;">Clique para adicionar mais fotos.</small>
+                                <small style="color:#666; font-size:0.8rem;">Selecione para adicionar. Arraste abaixo para ordenar.</small>
                             </div>
                         </div>
 
