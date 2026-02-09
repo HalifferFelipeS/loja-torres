@@ -19,10 +19,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- ATIVAR O ARRASTA E SOLTA (SORTABLE) ---
     const previewContainer = document.getElementById('image-preview');
     if (previewContainer) {
-        new Sortable(previewContainer, {
-            animation: 150,
-            ghostClass: 'sortable-ghost' // Classe adicionada ao item sendo arrastado
-        });
+        // Verifica se a biblioteca carregou
+        if (typeof Sortable !== 'undefined') {
+            new Sortable(previewContainer, {
+                animation: 150,
+                ghostClass: 'sortable-ghost'
+            });
+        } else {
+            console.warn('SortableJS não carregou. Arrastar não funcionará.');
+        }
     }
 
     // Navegação
@@ -38,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkLoginStatus();
 
-    // --- LOGINS E REGISTROS (MANTIDO) ---
+    // --- LOGINS E REGISTROS ---
     if(loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -204,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
         select.value = groupName;
         if(select.value !== groupName) document.getElementById('new-group').value = groupName;
 
-        // Limpa e Adiciona as fotos existentes no preview para poder arrastar
+        // Limpa e Adiciona as fotos existentes no preview
         const previewDiv = document.getElementById('image-preview');
         previewDiv.innerHTML = '';
         if(product.images && product.images.length) {
@@ -220,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // --- FUNÇÃO AUXILIAR: Cria a miniatura visual ---
+    // --- FUNÇÃO DE MINIATURA (O SEGREDO ESTÁ AQUI) ---
     function addThumbnailToPreview(base64Url) {
         const previewDiv = document.getElementById('image-preview');
         
@@ -229,12 +234,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const img = document.createElement('img');
         img.src = base64Url;
+        // !!! CORREÇÃO PARA O ARRASTAR FUNCIONAR !!!
+        img.draggable = false; 
         
         const removeBtn = document.createElement('div');
         removeBtn.className = 'remove-btn';
         removeBtn.innerHTML = '×';
         removeBtn.onclick = function() {
-            itemDiv.remove(); // Remove a foto ao clicar no X
+            itemDiv.remove(); // Remove apenas da visualização
         };
 
         itemDiv.appendChild(img);
@@ -272,14 +279,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const imageInput = newForm.querySelector('#product-images');
         
-        // --- QUANDO SELECIONA NOVOS ARQUIVOS ---
+        // --- SELEÇÃO DE NOVAS FOTOS ---
         imageInput.addEventListener('change', function() {
             Array.from(this.files).forEach(async file => {
                 const base64 = await fileToBase64(file);
-                addThumbnailToPreview(base64); // Só adiciona ao final da lista, não apaga as outras
+                addThumbnailToPreview(base64); // Adiciona na lista
             });
-            // Limpa o input para poder selecionar a mesma foto de novo se quiser
-            this.value = '';
+            this.value = ''; // Limpa para permitir selecionar a mesma foto se quiser
         });
 
         // --- AO SALVAR ---
@@ -296,8 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const desc = document.getElementById('product-description').value;
                 const group = document.getElementById('new-group').value || document.getElementById('product-group').value || 'Geral';
                 
-                // --- NOVA LÓGICA DE IMAGENS ---
-                // Pega as imagens DIRETAMENTE da ordem visual na tela
+                // --- PEGA A ORDEM VISUAL DAS FOTOS ---
                 const previewItems = document.querySelectorAll('#image-preview img');
                 let images = Array.from(previewItems).map(img => img.src);
 
@@ -308,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 alert('Salvo com sucesso!');
                 newForm.reset();
-                document.getElementById('image-preview').innerHTML = ''; // Limpa preview
+                document.getElementById('image-preview').innerHTML = ''; // Limpa
                 editingProduct = null;
                 
                 btn.innerText = "Salvar Produto";
