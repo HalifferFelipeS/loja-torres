@@ -11,7 +11,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 
   <style>
-    /* Área das fotos */
+    /* Container das fotos */
     #image-preview {
         display: flex;
         gap: 10px;
@@ -23,21 +23,17 @@
         background: #fafafa;
     }
     
-    /* O item da foto (quadradinho) */
+    /* Item Individual */
     .preview-item {
         position: relative;
-        cursor: grab; /* Mãozinha aberta */
+        cursor: grab;
         transition: transform 0.2s;
-        /* Impede que o texto/imagem seja selecionado azul */
-        user-select: none; 
-        -webkit-user-select: none;
+        user-select: none;
     }
     
-    .preview-item:active {
-        cursor: grabbing; /* Mãozinha fechada */
-    }
+    .preview-item:active { cursor: grabbing; }
 
-    /* A imagem em si */
+    /* Imagem */
     .preview-item img {
         height: 80px;
         width: 80px;
@@ -45,11 +41,11 @@
         border-radius: 8px;
         border: 2px solid #ddd;
         background: #fff;
-        /* CRUCIAL: Impede o navegador de tentar salvar a imagem ao arrastar */
-        pointer-events: none; 
+        display: block;
+        /* Removido o pointer-events: none para permitir interação do mouse */
     }
 
-    /* Botão X para apagar */
+    /* Botão Remover */
     .remove-btn {
         position: absolute;
         top: -8px;
@@ -70,11 +66,19 @@
         z-index: 10;
     }
 
-    /* Estilo visual de quando você está arrastando (o fantasma) */
+    /* Espaço vazio onde a imagem vai cair */
     .sortable-ghost {
-        opacity: 0.4;
+        opacity: 0.2;
         background-color: #e2e2e2;
-        border-radius: 8px;
+        border: 2px dashed #999;
+    }
+
+    /* A imagem que fica "grudada" no mouse enquanto você arrasta */
+    .sortable-fallback {
+        opacity: 0.9 !important;
+        transform: scale(1.05);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        cursor: grabbing;
     }
   </style>
 </head>
