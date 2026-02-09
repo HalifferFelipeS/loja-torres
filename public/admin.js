@@ -15,15 +15,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('admin-login-form');
     const registerForm = document.getElementById('admin-register-form');
     
-    // --- ATIVAR O ARRASTA E SOLTA ---
+    // --- ATIVAR O SORTABLE (ARRASTAR) ---
     const previewContainer = document.getElementById('image-preview');
     if (previewContainer) {
         if (window.Sortable) {
             new window.Sortable(previewContainer, {
-                animation: 150,
-                ghostClass: 'sortable-ghost', 
+                animation: 200,             // Movimento suave
+                ghostClass: 'sortable-ghost',
                 dragClass: 'sortable-drag',
-                forceFallback: true, // Garante que funcione em qualquer navegador
+                forceFallback: true,        // Garante que o sistema próprio de arraste seja usado
                 delay: 0
             });
         }
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkLoginStatus();
 
-    // --- LOGIN E REGISTRO ---
+    // --- LOGIN ---
     if(loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- REGISTRO ---
     if(registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -186,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
         select.value = groupName;
         if(select.value !== groupName) document.getElementById('new-group').value = groupName;
 
+        // Limpa e Adiciona as fotos no preview
         const previewDiv = document.getElementById('image-preview');
         previewDiv.innerHTML = '';
         if(product.images && product.images.length) {
@@ -200,22 +202,24 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // --- NOVA FUNÇÃO DE MINIATURA (USANDO BACKGROUND-IMAGE) ---
+    // --- NOVA LÓGICA: USA BACKGROUND-IMAGE EM VEZ DE IMG ---
     function addThumbnailToPreview(base64Url) {
         const previewDiv = document.getElementById('image-preview');
         
         const itemDiv = document.createElement('div');
         itemDiv.className = 'preview-item';
-        // Define a imagem como fundo (o navegador não tenta arrastar fundos)
+        
+        // Define a imagem como background para evitar bugs de arrastar
         itemDiv.style.backgroundImage = `url('${base64Url}')`;
-        // Guarda a URL num atributo para recuperar ao salvar
+        
+        // Salva a URL no atributo "data-url" para recuperarmos depois
         itemDiv.setAttribute('data-url', base64Url);
         
         const removeBtn = document.createElement('div');
         removeBtn.className = 'remove-btn';
         removeBtn.innerHTML = '×';
         removeBtn.onclick = function(e) {
-            e.stopPropagation(); // Evita conflitos
+            e.stopPropagation(); // Impede o clique de propagar
             itemDiv.remove();
         };
 
@@ -274,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const desc = document.getElementById('product-description').value;
                 const group = document.getElementById('new-group').value || document.getElementById('product-group').value || 'Geral';
                 
-                // --- RECUPERA AS IMAGENS DOS ATRIBUTOS DATA-URL ---
+                // --- RECUPERA AS IMAGENS DA ORDEM VISUAL (data-url) ---
                 const previewItems = document.querySelectorAll('.preview-item');
                 let images = Array.from(previewItems).map(div => div.getAttribute('data-url'));
 
