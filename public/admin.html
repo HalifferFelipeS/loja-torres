@@ -7,6 +7,59 @@
   
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+
+  <style>
+    /* Estilo para indicar que pode arrastar */
+    #image-preview {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px;
+        border: 2px dashed #e9ecef;
+        border-radius: 12px;
+        min-height: 100px;
+        background: #fafafa;
+    }
+    
+    .preview-item {
+        position: relative;
+        cursor: grab; /* Mãozinha aberta */
+        transition: transform 0.2s;
+    }
+    
+    .preview-item:active {
+        cursor: grabbing; /* Mãozinha fechada ao arrastar */
+    }
+
+    .preview-item img {
+        height: 80px;
+        width: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 2px solid #ddd;
+        background: #fff;
+    }
+
+    /* Botãozinho X para remover foto individualmente (Opcional, mas útil) */
+    .remove-btn {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: red;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: none;
+    }
+  </style>
 </head>
 <body>
   
@@ -95,8 +148,9 @@
                                 <input type="number" id="product-price" step="0.01">
                             </div>
                             <div class="form-group">
-                                <label>Fotos do Produto</label>
+                                <label>Adicionar Fotos</label>
                                 <input type="file" id="product-images" accept="image/*" multiple>
+                                <small style="color:#666; font-size:0.8rem;">Selecione para adicionar à lista abaixo. Arraste para ordenar.</small>
                             </div>
                         </div>
 
@@ -105,7 +159,9 @@
                             <textarea id="product-description" rows="3"></textarea>
                         </div>
                         
-                        <div id="image-preview" style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
+                        <label style="font-weight:600; font-size:0.9rem; color:#666;">Ordem das Fotos (Arraste para mudar):</label>
+                        <div id="image-preview">
+                            </div>
 
                         <button type="submit" class="buy-button">Salvar Produto</button>
                     </form>
@@ -131,7 +187,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                </tbody>
+                            </tbody>
                         </table>
                     </div>
 
