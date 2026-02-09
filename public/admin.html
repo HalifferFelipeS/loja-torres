@@ -24,37 +24,30 @@
         align-items: flex-start;
     }
     
-    /* O item (cartãozinho) */
+    /* O item (cartãozinho) - AGORA COM FOTO NO BACKGROUND */
     .preview-item {
         position: relative;
-        cursor: grab; /* Mãozinha aberta */
-        transition: transform 0.1s;
-        /* Impede seleção de texto azul */
-        user-select: none;
-        -webkit-user-select: none;
-        touch-action: none; /* Ajuda em telas touch */
+        width: 100px;  /* Tamanho Fixo */
+        height: 100px; /* Tamanho Fixo */
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        background-color: #fff;
+        background-size: contain;   /* Ajusta a foto */
+        background-repeat: no-repeat;
+        background-position: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        cursor: grab;
+        
+        /* OBRIGATÓRIO PARA ARRASTAR EM TELAS TOUCH */
+        touch-action: none; 
     }
     
     .preview-item:active {
-        cursor: grabbing; /* Mãozinha fechada */
+        cursor: grabbing;
+        border-color: #FFD700; /* Amarelo ao segurar */
     }
 
-    /* A IMAGEM (O SEGREDO ESTÁ AQUI) */
-    .preview-item img {
-        height: 90px;
-        width: 90px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-        background: #fff;
-        display: block;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        
-        /* BLOQUEIA INTERAÇÃO DIRETA COM A IMAGEM PARA PERMITIR ARRASTAR O BLOCO */
-        pointer-events: none; 
-    }
-
-    /* Botão Remover (Precisa liberar o clique) */
+    /* Botão Remover */
     .remove-btn {
         position: absolute;
         top: -8px;
@@ -72,31 +65,24 @@
         cursor: pointer;
         border: 2px solid #fff;
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        z-index: 10;
-        
-        /* Libera o clique no botão X */
-        pointer-events: auto; 
     }
-    .remove-btn:hover {
-        background: #cc0000;
-        transform: scale(1.1);
-    }
+    .remove-btn:hover { background: #cc0000; transform: scale(1.1); }
 
     /* Classes visuais do SortableJS */
     .sortable-ghost {
         opacity: 0.3;
-        background: #e0e0e0;
+        background-color: #e0e0e0 !important;
+        background-image: none !important; /* Remove foto do fantasma */
         border: 2px dashed #999;
-        border-radius: 8px;
     }
 
     .sortable-drag {
         cursor: grabbing;
         opacity: 1 !important;
-        background: #fff;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        transform: scale(1.05);
+        background-color: #fff;
+        transform: scale(1.1);
         z-index: 100;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.3);
     }
   </style>
 </head>
