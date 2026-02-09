@@ -177,11 +177,13 @@ document.addEventListener('DOMContentLoaded', () => {
         previewDiv.innerHTML = '';
         
         if(product.images && product.images.length) {
-            // Passa o índice (0, 1, 2...) para virar ordem (1, 2, 3...)
             product.images.forEach((url, index) => {
                 addThumbnailToPreview(url, index + 1);
             });
         }
+        
+        // Valida logo de cara para garantir que está tudo certo
+        validateOrder();
 
         const formBtn = document.querySelector('#product-form button[type="submit"]');
         formBtn.innerText = "Salvar Alterações (Modo Edição)";
@@ -189,21 +191,62 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // --- NOVA FUNÇÃO DE MINIATURA COM INPUT DE ORDEM ---
+    // --- FUNÇÃO DE VALIDAÇÃO DE NÚMEROS REPETIDOS ---
+    function validateOrder() {
+        const inputs = document.querySelectorAll('.order-input');
+        const saveBtn = document.querySelector('#product-form button[type="submit"]');
+        
+        // 1. Coleta os valores
+        const values = {};
+        let hasDuplicates = false;
+
+        inputs.forEach(input => {
+            const val = input.value;
+            if(values[val]) {
+                values[val]++;
+                hasDuplicates = true;
+            } else {
+                values[val] = 1;
+            }
+        });
+
+        // 2. Marca os erros (bordas vermelhas)
+        inputs.forEach(input => {
+            if(values[input.value] > 1) {
+                input.classList.add('input-error');
+            } else {
+                input.classList.remove('input-error');
+            }
+        });
+
+        // 3. Bloqueia ou libera o botão
+        if(hasDuplicates) {
+            saveBtn.disabled = true;
+            saveBtn.innerText = "Números Duplicados! Corrija para Salvar.";
+            saveBtn.style.backgroundColor = "#ff4444";
+        } else {
+            saveBtn.disabled = false;
+            // Restaura o texto original
+            if (editingProduct) {
+                saveBtn.innerText = "Salvar Alterações (Modo Edição)";
+                saveBtn.style.backgroundColor = "#F59E0B";
+            } else {
+                saveBtn.innerText = "Salvar Produto";
+                saveBtn.style.backgroundColor = ""; // Cor padrão do CSS
+            }
+        }
+    }
+
     function addThumbnailToPreview(base64Url, orderNumber) {
         const previewDiv = document.getElementById('image-preview');
-        
         const itemDiv = document.createElement('div');
         itemDiv.className = 'preview-item';
         
-        // 1. Box da Imagem
         const imgBox = document.createElement('div');
         imgBox.className = 'preview-image-box';
         imgBox.style.backgroundImage = `url('${base64Url}')`;
-        // Guarda a URL no elemento
         itemDiv.setAttribute('data-url', base64Url);
 
-        // 2. Label e Input de Ordem
         const label = document.createElement('span');
         label.className = 'order-label';
         label.innerText = 'Ordem';
@@ -211,15 +254,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const input = document.createElement('input');
         input.type = 'number';
         input.className = 'order-input';
-        // Se veio um número, usa. Se não, pega o total + 1 (próximo da fila)
         input.value = orderNumber || (previewDiv.children.length + 1);
+        
+        // --- ESCUTA MUDANÇAS PARA VALIDAR NA HORA ---
+        input.addEventListener('input', validateOrder);
+        input.addEventListener('keyup', validateOrder);
 
-        // 3. Botão Remover
         const removeBtn = document.createElement('div');
         removeBtn.className = 'remove-btn';
         removeBtn.innerHTML = '×';
         removeBtn.onclick = function(e) {
             itemDiv.remove();
+            validateOrder(); // Revalida ao remover
         };
 
         itemDiv.appendChild(imgBox);
@@ -260,18 +306,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const imageInput = newForm.querySelector('#product-images');
         
         imageInput.addEventListener('change', function() {
-            // Conta quantos já tem para sugerir o próximo número
             const currentCount = document.getElementById('image-preview').children.length;
-            
             Array.from(this.files).forEach(async (file, i) => {
                 const base64 = await fileToBase64(file);
-                // Sugere ordem: existentes + índice do upload + 1
                 addThumbnailToPreview(base64, currentCount + i + 1);
             });
             this.value = ''; 
         });
 
-        // --- SALVAR COM ORDENAÇÃO MANUAL ---
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = newForm.querySelector('button');
@@ -285,10 +327,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const desc = document.getElementById('product-description').value;
                 const group = document.getElementById('new-group').value || document.getElementById('product-group').value || 'Geral';
                 
-                // 1. Coleta todos os itens do preview
                 const previewItems = Array.from(document.querySelectorAll('.preview-item'));
                 
-                // 2. Cria um array de objetos { url, ordem }
                 const itemsWithOrder = previewItems.map(item => {
                     return {
                         url: item.getAttribute('data-url'),
@@ -296,10 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
                 });
 
-                // 3. Ordena o array baseado no número digitado (crescente)
                 itemsWithOrder.sort((a, b) => a.order - b.order);
-
-                // 4. Extrai só as URLs, agora na ordem certa
                 const images = itemsWithOrder.map(item => item.url);
 
                 const id = editingProduct ? editingProduct.id : Date.now().toString();
@@ -319,6 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.innerText = originalText;
             } finally {
                 btn.disabled = false;
+                validateOrder(); // Re-checa o botão
             }
         });
     }
