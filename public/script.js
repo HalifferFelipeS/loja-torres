@@ -85,7 +85,7 @@ function renderProductSliders(products) {
         <div class="product-info">
           <h3>${product.name}</h3>
           ${priceHTML}
-          <button class="buy-button" data-id="${product.id}">Solicitar Produto</button>
+          <button class="buy-button" data-id="${product.id}">Comprar aqui!</button>
         </div>
       `;
       gridDiv.appendChild(card);
@@ -201,7 +201,7 @@ function setupGlobalClicks(products) {
                     <h3>${product.name}</h3>
                     <p class="price">${priceText}</p>
                     <p>${product.description || 'Sem descrição.'}</p>
-                    <button id="modal-whatsapp-btn" class="buy-button">Pedir no WhatsApp</button>
+                    <button id="modal-whatsapp-btn" class="buy-button">Comprar aqui!</button>
                 `;
                 
                 // 3. CLIQUE DENTRO DO MODAL
