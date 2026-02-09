@@ -8,14 +8,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-
   <style>
     /* Área das fotos */
     #image-preview {
         display: flex;
         gap: 15px;
-        flex-wrap: wrap; /* Permite cair para a linha de baixo */
+        flex-wrap: wrap;
         padding: 15px;
         border: 2px dashed #ccc;
         border-radius: 12px;
@@ -24,36 +22,50 @@
         align-items: flex-start;
     }
     
-    /* O "CARTÃO" DA FOTO (Sem tag IMG dentro, a foto é background) */
+    /* O "CARTÃO" DA FOTO */
     .preview-item {
         position: relative;
-        width: 100px;
-        height: 100px;
+        width: 110px;        /* Um pouco mais largo */
+        height: 150px;       /* Mais alto para caber o input */
         border-radius: 8px;
         border: 1px solid #ddd;
         background-color: #fff;
-        
-        /* AQUI ESTÁ O SEGREDO: FOTO COMO FUNDO */
-        background-size: cover; 
-        background-position: center;
-        background-repeat: no-repeat;
-        
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 5px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        cursor: grab; /* Mãozinha aberta */
-        
-        /* OBRIGATÓRIO PARA NÃO TRAVAR O ARRASTE */
-        user-select: none;
-        touch-action: none; 
-    }
-    
-    /* Quando estiver segurando o item */
-    .preview-item:active {
-        cursor: grabbing;
-        border: 2px solid #FFD700; /* Borda amarela ao segurar */
-        transform: scale(1.05);
     }
 
-    /* Botão X de remover */
+    /* A IMAGEM COMO BACKGROUND */
+    .preview-image-box {
+        width: 100%;
+        height: 90px;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border-radius: 6px;
+        border: 1px solid #eee;
+        margin-bottom: 5px;
+    }
+
+    /* O CAMPO DE NÚMERO */
+    .order-input {
+        width: 60px;
+        padding: 5px;
+        text-align: center;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+    
+    .order-label {
+        font-size: 0.75rem;
+        color: #666;
+        margin-bottom: 2px;
+    }
+
+    /* Botão Remover */
     .remove-btn {
         position: absolute;
         top: -8px;
@@ -75,22 +87,6 @@
     }
     .remove-btn:hover { background: #cc0000; transform: scale(1.1); }
 
-    /* Espaço vazio onde a foto vai cair */
-    .sortable-ghost {
-        opacity: 0.2;
-        background-color: #ddd !important;
-        background-image: none !important; /* Remove a foto do fantasma */
-        border: 2px dashed #999;
-    }
-
-    /* A foto enquanto está sendo arrastada */
-    .sortable-drag {
-        opacity: 1 !important;
-        background-color: #fff;
-        cursor: grabbing;
-        z-index: 100;
-        box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-    }
   </style>
 </head>
 <body>
@@ -182,7 +178,7 @@
                             <div class="form-group">
                                 <label>Adicionar Fotos</label>
                                 <input type="file" id="product-images" accept="image/*" multiple>
-                                <small style="color:#666; font-size:0.8rem;">Selecione para adicionar. Arraste abaixo para ordenar.</small>
+                                <small style="color:#666; font-size:0.8rem;">Selecione para adicionar.</small>
                             </div>
                         </div>
 
@@ -191,9 +187,12 @@
                             <textarea id="product-description" rows="3"></textarea>
                         </div>
                         
-                        <div style="background: #fff3cd; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ffeeba;">
-                            <label style="font-weight:700; font-size:0.9rem; color:#856404; display:block;">📷 Ordem das Fotos</label>
-                            <span style="font-size: 0.85rem; color: #856404;">Arraste os quadradinhos para mudar a ordem. A primeira foto será a capa.</span>
+                        <div style="background: #e8f0fe; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #b3d7ff;">
+                            <label style="font-weight:700; font-size:0.9rem; color:#004085; display:block;">🔢 Ordem das Fotos</label>
+                            <span style="font-size: 0.85rem; color: #004085;">
+                                Digite a ordem no quadradinho abaixo de cada foto.<br>
+                                <strong>1</strong> = Capa principal, <strong>2</strong> = Segunda foto, etc.
+                            </span>
                         </div>
                         
                         <div id="image-preview">
