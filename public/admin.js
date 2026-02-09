@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemsPerPage = 15;
     let searchTerm = "";
 
-    // Elementos
+    // Elementos do DOM
     const loginSection = document.getElementById('login-section');
     const registerSection = document.getElementById('register-section');
     const dashboard = document.getElementById('admin-dashboard');
@@ -16,17 +16,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('admin-login-form');
     const registerForm = document.getElementById('admin-register-form');
     
-    // --- ATIVAR O ARRASTA E SOLTA (SORTABLE) ---
+    // --- ATIVAR O ARRASTA E SOLTA (CORRIGIDO) ---
     const previewContainer = document.getElementById('image-preview');
     if (previewContainer) {
-        // Verifica se a biblioteca carregou
         if (typeof Sortable !== 'undefined') {
             new Sortable(previewContainer, {
                 animation: 150,
-                ghostClass: 'sortable-ghost'
+                
+                // --- O SEGREDO ESTÁ AQUI ---
+                forceFallback: true, // Ignora o navegador e força o arraste via JS
+                fallbackClass: 'sortable-fallback', // Classe visual enquanto arrasta
+                ghostClass: 'sortable-ghost', // Classe do "espaço vazio" onde vai cair
+                delay: 0, // Começa a arrastar na hora
+                
+                onStart: function () {
+                   document.body.style.cursor = 'grabbing';
+                },
+                onEnd: function () {
+                   document.body.style.cursor = 'default';
+                }
             });
         } else {
-            console.warn('SortableJS não carregou. Arrastar não funcionará.');
+            console.warn('SortableJS não carregou. Verifique sua conexão.');
         }
     }
 
@@ -43,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkLoginStatus();
 
-    // --- LOGINS E REGISTROS ---
+    // --- LOGIN ---
     if(loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -70,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- REGISTRO ---
     if(registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -197,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- FUNÇÃO DE EDIÇÃO (Popula o preview para reordenar) ---
+    // --- FUNÇÃO DE EDIÇÃO ---
     function fillFormForEdit(product) {
         editingProduct = product;
         document.getElementById('product-name').value = product.name;
@@ -209,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
         select.value = groupName;
         if(select.value !== groupName) document.getElementById('new-group').value = groupName;
 
-        // Limpa e Adiciona as fotos existentes no preview
+        // Limpa e Adiciona as fotos existentes
         const previewDiv = document.getElementById('image-preview');
         previewDiv.innerHTML = '';
         if(product.images && product.images.length) {
@@ -225,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // --- FUNÇÃO DE MINIATURA (O SEGREDO ESTÁ AQUI) ---
+    // --- CRIA A MINIATURA ---
     function addThumbnailToPreview(base64Url) {
         const previewDiv = document.getElementById('image-preview');
         
@@ -234,14 +246,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const img = document.createElement('img');
         img.src = base64Url;
-        // !!! CORREÇÃO PARA O ARRASTAR FUNCIONAR !!!
-        img.draggable = false; 
+        img.draggable = false; // Garante que a imagem não seja "salvável"
         
         const removeBtn = document.createElement('div');
         removeBtn.className = 'remove-btn';
         removeBtn.innerHTML = '×';
         removeBtn.onclick = function() {
-            itemDiv.remove(); // Remove apenas da visualização
+            itemDiv.remove();
         };
 
         itemDiv.appendChild(img);
@@ -279,16 +290,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const imageInput = newForm.querySelector('#product-images');
         
-        // --- SELEÇÃO DE NOVAS FOTOS ---
         imageInput.addEventListener('change', function() {
             Array.from(this.files).forEach(async file => {
                 const base64 = await fileToBase64(file);
-                addThumbnailToPreview(base64); // Adiciona na lista
+                addThumbnailToPreview(base64);
             });
-            this.value = ''; // Limpa para permitir selecionar a mesma foto se quiser
+            this.value = ''; 
         });
 
-        // --- AO SALVAR ---
+        // --- SALVAR ---
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = newForm.querySelector('button');
@@ -302,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const desc = document.getElementById('product-description').value;
                 const group = document.getElementById('new-group').value || document.getElementById('product-group').value || 'Geral';
                 
-                // --- PEGA A ORDEM VISUAL DAS FOTOS ---
+                // Pega as imagens na ordem visual
                 const previewItems = document.querySelectorAll('#image-preview img');
                 let images = Array.from(previewItems).map(img => img.src);
 
@@ -313,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 alert('Salvo com sucesso!');
                 newForm.reset();
-                document.getElementById('image-preview').innerHTML = ''; // Limpa
+                document.getElementById('image-preview').innerHTML = '';
                 editingProduct = null;
                 
                 btn.innerText = "Salvar Produto";
