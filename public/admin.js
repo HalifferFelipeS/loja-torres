@@ -15,20 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('admin-login-form');
     const registerForm = document.getElementById('admin-register-form');
     
-    // --- ATIVAR O SORTABLE (ARRASTAR) ---
-    const previewContainer = document.getElementById('image-preview');
-    if (previewContainer) {
-        if (window.Sortable) {
-            new window.Sortable(previewContainer, {
-                animation: 200,             // Movimento suave
-                ghostClass: 'sortable-ghost',
-                dragClass: 'sortable-drag',
-                forceFallback: true,        // Garante que o sistema próprio de arraste seja usado
-                delay: 0
-            });
-        }
-    }
-
     // Navegação
     document.getElementById('show-register')?.addEventListener('click', (e) => {
         e.preventDefault(); loginSection.classList.add('hidden'); registerSection.classList.remove('hidden');
@@ -187,12 +173,13 @@ document.addEventListener('DOMContentLoaded', () => {
         select.value = groupName;
         if(select.value !== groupName) document.getElementById('new-group').value = groupName;
 
-        // Limpa e Adiciona as fotos no preview
         const previewDiv = document.getElementById('image-preview');
         previewDiv.innerHTML = '';
+        
         if(product.images && product.images.length) {
-            product.images.forEach(url => {
-                addThumbnailToPreview(url);
+            // Passa o índice (0, 1, 2...) para virar ordem (1, 2, 3...)
+            product.images.forEach((url, index) => {
+                addThumbnailToPreview(url, index + 1);
             });
         }
 
@@ -202,27 +189,42 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // --- NOVA LÓGICA: USA BACKGROUND-IMAGE EM VEZ DE IMG ---
-    function addThumbnailToPreview(base64Url) {
+    // --- NOVA FUNÇÃO DE MINIATURA COM INPUT DE ORDEM ---
+    function addThumbnailToPreview(base64Url, orderNumber) {
         const previewDiv = document.getElementById('image-preview');
         
         const itemDiv = document.createElement('div');
         itemDiv.className = 'preview-item';
         
-        // Define a imagem como background para evitar bugs de arrastar
-        itemDiv.style.backgroundImage = `url('${base64Url}')`;
-        
-        // Salva a URL no atributo "data-url" para recuperarmos depois
+        // 1. Box da Imagem
+        const imgBox = document.createElement('div');
+        imgBox.className = 'preview-image-box';
+        imgBox.style.backgroundImage = `url('${base64Url}')`;
+        // Guarda a URL no elemento
         itemDiv.setAttribute('data-url', base64Url);
-        
+
+        // 2. Label e Input de Ordem
+        const label = document.createElement('span');
+        label.className = 'order-label';
+        label.innerText = 'Ordem';
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'order-input';
+        // Se veio um número, usa. Se não, pega o total + 1 (próximo da fila)
+        input.value = orderNumber || (previewDiv.children.length + 1);
+
+        // 3. Botão Remover
         const removeBtn = document.createElement('div');
         removeBtn.className = 'remove-btn';
         removeBtn.innerHTML = '×';
         removeBtn.onclick = function(e) {
-            e.stopPropagation(); // Impede o clique de propagar
             itemDiv.remove();
         };
 
+        itemDiv.appendChild(imgBox);
+        itemDiv.appendChild(label);
+        itemDiv.appendChild(input);
         itemDiv.appendChild(removeBtn);
         previewDiv.appendChild(itemDiv);
     }
@@ -258,13 +260,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const imageInput = newForm.querySelector('#product-images');
         
         imageInput.addEventListener('change', function() {
-            Array.from(this.files).forEach(async file => {
+            // Conta quantos já tem para sugerir o próximo número
+            const currentCount = document.getElementById('image-preview').children.length;
+            
+            Array.from(this.files).forEach(async (file, i) => {
                 const base64 = await fileToBase64(file);
-                addThumbnailToPreview(base64);
+                // Sugere ordem: existentes + índice do upload + 1
+                addThumbnailToPreview(base64, currentCount + i + 1);
             });
             this.value = ''; 
         });
 
+        // --- SALVAR COM ORDENAÇÃO MANUAL ---
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = newForm.querySelector('button');
@@ -278,9 +285,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const desc = document.getElementById('product-description').value;
                 const group = document.getElementById('new-group').value || document.getElementById('product-group').value || 'Geral';
                 
-                // --- RECUPERA AS IMAGENS DA ORDEM VISUAL (data-url) ---
-                const previewItems = document.querySelectorAll('.preview-item');
-                let images = Array.from(previewItems).map(div => div.getAttribute('data-url'));
+                // 1. Coleta todos os itens do preview
+                const previewItems = Array.from(document.querySelectorAll('.preview-item'));
+                
+                // 2. Cria um array de objetos { url, ordem }
+                const itemsWithOrder = previewItems.map(item => {
+                    return {
+                        url: item.getAttribute('data-url'),
+                        order: parseInt(item.querySelector('.order-input').value) || 999
+                    };
+                });
+
+                // 3. Ordena o array baseado no número digitado (crescente)
+                itemsWithOrder.sort((a, b) => a.order - b.order);
+
+                // 4. Extrai só as URLs, agora na ordem certa
+                const images = itemsWithOrder.map(item => item.url);
 
                 const id = editingProduct ? editingProduct.id : Date.now().toString();
                 const newProd = { id, name, price, description: desc, group, images };
