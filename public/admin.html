@@ -11,7 +11,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 
   <style>
-    /* Estilo para indicar que pode arrastar */
+    /* Área das fotos */
     #image-preview {
         display: flex;
         gap: 10px;
@@ -23,16 +23,21 @@
         background: #fafafa;
     }
     
+    /* O item da foto (quadradinho) */
     .preview-item {
         position: relative;
         cursor: grab; /* Mãozinha aberta */
         transition: transform 0.2s;
+        /* Impede que o texto/imagem seja selecionado azul */
+        user-select: none; 
+        -webkit-user-select: none;
     }
     
     .preview-item:active {
-        cursor: grabbing; /* Mãozinha fechada ao arrastar */
+        cursor: grabbing; /* Mãozinha fechada */
     }
 
+    /* A imagem em si */
     .preview-item img {
         height: 80px;
         width: 80px;
@@ -40,24 +45,36 @@
         border-radius: 8px;
         border: 2px solid #ddd;
         background: #fff;
+        /* CRUCIAL: Impede o navegador de tentar salvar a imagem ao arrastar */
+        pointer-events: none; 
     }
 
-    /* Botãozinho X para remover foto individualmente (Opcional, mas útil) */
+    /* Botão X para apagar */
     .remove-btn {
         position: absolute;
-        top: -5px;
-        right: -5px;
-        background: red;
+        top: -8px;
+        right: -8px;
+        background: #ff4444;
         color: white;
         border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        font-size: 12px;
+        width: 22px;
+        height: 22px;
+        font-size: 14px;
+        font-weight: bold;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        border: none;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        z-index: 10;
+    }
+
+    /* Estilo visual de quando você está arrastando (o fantasma) */
+    .sortable-ghost {
+        opacity: 0.4;
+        background-color: #e2e2e2;
+        border-radius: 8px;
     }
   </style>
 </head>
@@ -150,7 +167,7 @@
                             <div class="form-group">
                                 <label>Adicionar Fotos</label>
                                 <input type="file" id="product-images" accept="image/*" multiple>
-                                <small style="color:#666; font-size:0.8rem;">Selecione para adicionar à lista abaixo. Arraste para ordenar.</small>
+                                <small style="color:#666; font-size:0.8rem;">Selecione para adicionar. Arraste abaixo para ordenar.</small>
                             </div>
                         </div>
 
@@ -159,7 +176,7 @@
                             <textarea id="product-description" rows="3"></textarea>
                         </div>
                         
-                        <label style="font-weight:600; font-size:0.9rem; color:#666;">Ordem das Fotos (Arraste para mudar):</label>
+                        <label style="font-weight:600; font-size:0.9rem; color:#666; margin-bottom:5px; display:block;">Ordem das Fotos (Arraste para organizar):</label>
                         <div id="image-preview">
                             </div>
 
