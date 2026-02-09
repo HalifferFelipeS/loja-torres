@@ -15,20 +15,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('admin-login-form');
     const registerForm = document.getElementById('admin-register-form');
     
-    // --- ATIVAR O ARRASTA E SOLTA (ORDENAÇÃO) ---
+    // --- ATIVAR O ARRASTA E SOLTA ---
     const previewContainer = document.getElementById('image-preview');
     if (previewContainer) {
-        // Tenta iniciar o Sortable se disponível
         if (window.Sortable) {
             new window.Sortable(previewContainer, {
-                animation: 200,            // Suavidade do movimento
-                ghostClass: 'sortable-ghost', // Classe do espaço vazio
-                dragClass: 'sortable-drag',   // Classe do item sendo arrastado
-                forceFallback: true,       // OBRIGA O NAVEGADOR A USAR O NOSSO ARRASTE
+                animation: 150,
+                ghostClass: 'sortable-ghost', 
+                dragClass: 'sortable-drag',
+                forceFallback: true, // Garante que funcione em qualquer navegador
                 delay: 0
             });
-        } else {
-            console.warn("Biblioteca Sortable não carregada.");
         }
     }
 
@@ -45,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkLoginStatus();
 
-    // --- LOGIN ---
+    // --- LOGIN E REGISTRO ---
     if(loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -53,26 +50,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('admin-password').value;
             const btn = loginForm.querySelector('button');
             btn.innerText = "Verificando..."; btn.disabled = true;
-
             try {
-                const res = await fetch('/api/auth', {
-                    method: 'POST', body: JSON.stringify({ action: 'login', email, password })
-                });
+                const res = await fetch('/api/auth', { method: 'POST', body: JSON.stringify({ action: 'login', email, password }) });
                 const data = await res.json().catch(() => ({}));
-
-                if (res.ok && data.success) {
-                    localStorage.setItem('adminLoggedIn', 'true'); checkLoginStatus();
-                } else {
-                    if(email === 'admin@torres.com' && password === 'admin123') {
-                        localStorage.setItem('adminLoggedIn', 'true'); checkLoginStatus();
-                    } else { alert(data.error || 'Dados incorretos.'); }
+                if (res.ok && data.success) { localStorage.setItem('adminLoggedIn', 'true'); checkLoginStatus(); }
+                else { 
+                    if(email === 'admin@torres.com' && password === 'admin123') { localStorage.setItem('adminLoggedIn', 'true'); checkLoginStatus(); }
+                    else { alert(data.error || 'Dados incorretos.'); }
                 }
             } catch(e) { console.error(e); alert('Erro de conexão.'); } 
             finally { btn.innerText = "Entrar"; btn.disabled = false; }
         });
     }
 
-    // --- REGISTRO ---
     if(registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -80,18 +70,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('register-admin-password').value;
             const confirm = document.getElementById('register-admin-password-confirm').value;
             if(password !== confirm) return alert('Senhas não batem.');
-            
             const btn = registerForm.querySelector('button');
             btn.innerText = "Criando..."; btn.disabled = true;
-
             try {
-                const res = await fetch('/api/auth', {
-                    method: 'POST', body: JSON.stringify({ action: 'register', email, password })
-                });
+                const res = await fetch('/api/auth', { method: 'POST', body: JSON.stringify({ action: 'register', email, password }) });
                 const data = await res.json();
-                if(res.ok) { 
-                    alert('Admin criado!'); registerSection.classList.add('hidden'); loginSection.classList.remove('hidden'); 
-                } else { alert('Erro: ' + (data.error || 'Falha ao cadastrar.')); }
+                if(res.ok) { alert('Admin criado!'); registerSection.classList.add('hidden'); loginSection.classList.remove('hidden'); }
+                else { alert('Erro: ' + (data.error || 'Falha ao cadastrar.')); }
             } catch(e) { alert('Erro de conexão.'); }
             finally { btn.innerText = "Registrar e Entrar"; btn.disabled = false; }
         });
@@ -136,14 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
             currentPage = 1;
             filterAndRenderTable();
         });
-
-        prevBtn.addEventListener('click', () => {
-            if (currentPage > 1) { currentPage--; filterAndRenderTable(); }
-        });
-
-        nextBtn.addEventListener('click', () => {
-            currentPage++; filterAndRenderTable();
-        });
+        prevBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; filterAndRenderTable(); } });
+        nextBtn.addEventListener('click', () => { currentPage++; filterAndRenderTable(); });
     }
 
     function filterAndRenderTable() {
@@ -152,10 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const group = (p.group || p.group_name || '').toLowerCase();
             return name.includes(searchTerm) || group.includes(searchTerm);
         });
-
         const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
         if (currentPage > totalPages) currentPage = totalPages;
-        
         const start = (currentPage - 1) * itemsPerPage;
         const end = start + itemsPerPage;
         const visibleItems = filtered.slice(start, end);
@@ -176,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('page-info').innerText = `Página ${currentPage} de ${totalPages}`;
         document.getElementById('prev-page').disabled = currentPage === 1;
         document.getElementById('next-page').disabled = currentPage === totalPages;
-
         attachTableEvents(visibleItems);
     }
 
@@ -190,7 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
-
         tbody.querySelectorAll('.btn-edit').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const id = e.target.dataset.id;
@@ -200,7 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- FUNÇÃO DE EDIÇÃO ---
     function fillFormForEdit(product) {
         editingProduct = product;
         document.getElementById('product-name').value = product.name;
@@ -212,7 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
         select.value = groupName;
         if(select.value !== groupName) document.getElementById('new-group').value = groupName;
 
-        // Limpa e Adiciona as fotos existentes
         const previewDiv = document.getElementById('image-preview');
         previewDiv.innerHTML = '';
         if(product.images && product.images.length) {
@@ -224,29 +197,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const formBtn = document.querySelector('#product-form button[type="submit"]');
         formBtn.innerText = "Salvar Alterações (Modo Edição)";
         formBtn.style.backgroundColor = "#F59E0B"; 
-        
         document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // --- CRIA A MINIATURA ---
+    // --- NOVA FUNÇÃO DE MINIATURA (USANDO BACKGROUND-IMAGE) ---
     function addThumbnailToPreview(base64Url) {
         const previewDiv = document.getElementById('image-preview');
         
         const itemDiv = document.createElement('div');
         itemDiv.className = 'preview-item';
-        
-        const img = document.createElement('img');
-        img.src = base64Url;
-        img.draggable = false; // Garante que a imagem não seja "arrastável" nativamente
+        // Define a imagem como fundo (o navegador não tenta arrastar fundos)
+        itemDiv.style.backgroundImage = `url('${base64Url}')`;
+        // Guarda a URL num atributo para recuperar ao salvar
+        itemDiv.setAttribute('data-url', base64Url);
         
         const removeBtn = document.createElement('div');
         removeBtn.className = 'remove-btn';
         removeBtn.innerHTML = '×';
-        removeBtn.onclick = function() {
+        removeBtn.onclick = function(e) {
+            e.stopPropagation(); // Evita conflitos
             itemDiv.remove();
         };
 
-        itemDiv.appendChild(img);
         itemDiv.appendChild(removeBtn);
         previewDiv.appendChild(itemDiv);
     }
@@ -281,7 +253,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const imageInput = newForm.querySelector('#product-images');
         
-        // --- SELEÇÃO DE NOVAS FOTOS ---
         imageInput.addEventListener('change', function() {
             Array.from(this.files).forEach(async file => {
                 const base64 = await fileToBase64(file);
@@ -290,7 +261,6 @@ document.addEventListener('DOMContentLoaded', () => {
             this.value = ''; 
         });
 
-        // --- SALVAR ---
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = newForm.querySelector('button');
@@ -304,9 +274,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const desc = document.getElementById('product-description').value;
                 const group = document.getElementById('new-group').value || document.getElementById('product-group').value || 'Geral';
                 
-                // --- PEGA A ORDEM VISUAL EXATA DA TELA ---
-                const previewItems = document.querySelectorAll('#image-preview img');
-                let images = Array.from(previewItems).map(img => img.src);
+                // --- RECUPERA AS IMAGENS DOS ATRIBUTOS DATA-URL ---
+                const previewItems = document.querySelectorAll('.preview-item');
+                let images = Array.from(previewItems).map(div => div.getAttribute('data-url'));
 
                 const id = editingProduct ? editingProduct.id : Date.now().toString();
                 const newProd = { id, name, price, description: desc, group, images };
@@ -317,10 +287,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 newForm.reset();
                 document.getElementById('image-preview').innerHTML = '';
                 editingProduct = null;
-                
                 btn.innerText = "Salvar Produto";
                 btn.style.backgroundColor = "";
-                
                 loadDashboardData();
             } catch(e) {
                 alert('Erro: ' + e.message);
