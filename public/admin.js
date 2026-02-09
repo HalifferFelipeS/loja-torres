@@ -3,8 +3,6 @@ import { getInteractionStats } from './modules/adminStats.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     let editingProduct = null;
-    
-    // Estado da lista
     let allProducts = [];
     let currentPage = 1;
     const itemsPerPage = 15;
@@ -18,6 +16,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('admin-login-form');
     const registerForm = document.getElementById('admin-register-form');
     
+    // --- ATIVAR O ARRASTA E SOLTA (SORTABLE) ---
+    const previewContainer = document.getElementById('image-preview');
+    if (previewContainer) {
+        new Sortable(previewContainer, {
+            animation: 150,
+            ghostClass: 'sortable-ghost' // Classe adicionada ao item sendo arrastado
+        });
+    }
+
     // Navegação
     document.getElementById('show-register')?.addEventListener('click', (e) => {
         e.preventDefault(); loginSection.classList.add('hidden'); registerSection.classList.remove('hidden');
@@ -31,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkLoginStatus();
 
-    // --- LOGIN ---
+    // --- LOGINS E REGISTROS (MANTIDO) ---
     if(loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -44,58 +51,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch('/api/auth', {
                     method: 'POST', body: JSON.stringify({ action: 'login', email, password })
                 });
-                
-                // Tenta ler o JSON de resposta
                 const data = await res.json().catch(() => ({}));
 
                 if (res.ok && data.success) {
-                    localStorage.setItem('adminLoggedIn', 'true'); checkLoginStatus(); 
+                    localStorage.setItem('adminLoggedIn', 'true'); checkLoginStatus();
                 } else {
-                    // Fallback (Emergência se o banco falhar)
                     if(email === 'admin@torres.com' && password === 'admin123') {
                         localStorage.setItem('adminLoggedIn', 'true'); checkLoginStatus();
-                    } else { 
-                        alert(data.error || 'Dados incorretos.'); 
-                    }
+                    } else { alert(data.error || 'Dados incorretos.'); }
                 }
             } catch(e) { console.error(e); alert('Erro de conexão.'); } 
             finally { btn.innerText = "Entrar"; btn.disabled = false; }
         });
     }
 
-    // --- REGISTRO (CORRIGIDO) ---
     if(registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('register-admin-email').value;
             const password = document.getElementById('register-admin-password').value;
             const confirm = document.getElementById('register-admin-password-confirm').value;
-            const btn = registerForm.querySelector('button');
-
             if(password !== confirm) return alert('Senhas não batem.');
             
+            const btn = registerForm.querySelector('button');
             btn.innerText = "Criando..."; btn.disabled = true;
 
             try {
                 const res = await fetch('/api/auth', {
                     method: 'POST', body: JSON.stringify({ action: 'register', email, password })
                 });
-                
                 const data = await res.json();
-
                 if(res.ok) { 
-                    alert('Admin criado com sucesso!'); 
-                    registerSection.classList.add('hidden'); 
-                    loginSection.classList.remove('hidden'); 
-                } else { 
-                    // Mostra o erro exato (ex: Email já existe)
-                    alert('Erro: ' + (data.error || 'Não foi possível cadastrar.')); 
-                }
-            } catch (error) {
-                alert('Erro de conexão com o servidor.');
-            } finally {
-                btn.innerText = "Registrar e Entrar"; btn.disabled = false;
-            }
+                    alert('Admin criado!'); registerSection.classList.add('hidden'); loginSection.classList.remove('hidden'); 
+                } else { alert('Erro: ' + (data.error || 'Falha ao cadastrar.')); }
+            } catch(e) { alert('Erro de conexão.'); }
+            finally { btn.innerText = "Registrar e Entrar"; btn.disabled = false; }
         });
     }
 
@@ -110,9 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
             logoutBtn.classList.add('hidden');
         }
     }
-
-    // ... (O RESTANTE DO CÓDIGO DA TABELA, PESQUISA E EDIÇÃO CONTINUA IGUAL AO ANTERIOR) ...
-    // Vou incluir aqui o restante das funções para garantir que nada quebre ao copiar
 
     async function loadDashboardData() {
         const products = await getProducts();
@@ -147,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         nextBtn.addEventListener('click', () => {
-            currentPage++; filterAndRenderTable(); // Limite verificado dentro do render
+            currentPage++; filterAndRenderTable();
         });
     }
 
@@ -205,6 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- FUNÇÃO DE EDIÇÃO (Popula o preview para reordenar) ---
     function fillFormForEdit(product) {
         editingProduct = product;
         document.getElementById('product-name').value = product.name;
@@ -216,22 +204,42 @@ document.addEventListener('DOMContentLoaded', () => {
         select.value = groupName;
         if(select.value !== groupName) document.getElementById('new-group').value = groupName;
 
+        // Limpa e Adiciona as fotos existentes no preview para poder arrastar
         const previewDiv = document.getElementById('image-preview');
         previewDiv.innerHTML = '';
         if(product.images && product.images.length) {
             product.images.forEach(url => {
-                const img = document.createElement('img');
-                img.src = url;
-                img.style.height = '60px'; img.style.width = '60px'; img.style.objectFit = 'cover';
-                img.style.borderRadius = '8px'; img.style.border = '1px solid #ddd';
-                previewDiv.appendChild(img);
+                addThumbnailToPreview(url);
             });
         }
 
         const formBtn = document.querySelector('#product-form button[type="submit"]');
         formBtn.innerText = "Salvar Alterações (Modo Edição)";
         formBtn.style.backgroundColor = "#F59E0B"; 
+        
         document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // --- FUNÇÃO AUXILIAR: Cria a miniatura visual ---
+    function addThumbnailToPreview(base64Url) {
+        const previewDiv = document.getElementById('image-preview');
+        
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'preview-item';
+        
+        const img = document.createElement('img');
+        img.src = base64Url;
+        
+        const removeBtn = document.createElement('div');
+        removeBtn.className = 'remove-btn';
+        removeBtn.innerHTML = '×';
+        removeBtn.onclick = function() {
+            itemDiv.remove(); // Remove a foto ao clicar no X
+        };
+
+        itemDiv.appendChild(img);
+        itemDiv.appendChild(removeBtn);
+        previewDiv.appendChild(itemDiv);
     }
 
     function fileToBase64(file) {
@@ -263,23 +271,18 @@ document.addEventListener('DOMContentLoaded', () => {
         form.parentNode.replaceChild(newForm, form);
 
         const imageInput = newForm.querySelector('#product-images');
-        const previewDiv = document.getElementById('image-preview');
         
+        // --- QUANDO SELECIONA NOVOS ARQUIVOS ---
         imageInput.addEventListener('change', function() {
-            previewDiv.innerHTML = ''; 
-            Array.from(this.files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.style.height = '60px'; img.style.width = '60px'; img.style.objectFit = 'cover';
-                    img.style.borderRadius = '8px'; img.style.border = '1px solid #ddd';
-                    previewDiv.appendChild(img);
-                }
-                reader.readAsDataURL(file);
+            Array.from(this.files).forEach(async file => {
+                const base64 = await fileToBase64(file);
+                addThumbnailToPreview(base64); // Só adiciona ao final da lista, não apaga as outras
             });
+            // Limpa o input para poder selecionar a mesma foto de novo se quiser
+            this.value = '';
         });
 
+        // --- AO SALVAR ---
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = newForm.querySelector('button');
@@ -293,24 +296,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 const desc = document.getElementById('product-description').value;
                 const group = document.getElementById('new-group').value || document.getElementById('product-group').value || 'Geral';
                 
-                let images = [];
-                if(imageInput.files.length > 0) {
-                    const promises = Array.from(imageInput.files).map(fileToBase64);
-                    images = await Promise.all(promises);
-                } else if (editingProduct && editingProduct.images) {
-                    images = editingProduct.images;
-                }
-                
+                // --- NOVA LÓGICA DE IMAGENS ---
+                // Pega as imagens DIRETAMENTE da ordem visual na tela
+                const previewItems = document.querySelectorAll('#image-preview img');
+                let images = Array.from(previewItems).map(img => img.src);
+
                 const id = editingProduct ? editingProduct.id : Date.now().toString();
                 const newProd = { id, name, price, description: desc, group, images };
+                
                 await addProductToDB(newProd);
                 
                 alert('Salvo com sucesso!');
                 newForm.reset();
-                previewDiv.innerHTML = '';
+                document.getElementById('image-preview').innerHTML = ''; // Limpa preview
                 editingProduct = null;
+                
                 btn.innerText = "Salvar Produto";
                 btn.style.backgroundColor = "";
+                
                 loadDashboardData();
             } catch(e) {
                 alert('Erro: ' + e.message);
