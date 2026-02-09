@@ -25,8 +25,8 @@
     /* O "CARTÃO" DA FOTO */
     .preview-item {
         position: relative;
-        width: 110px;        /* Um pouco mais largo */
-        height: 150px;       /* Mais alto para caber o input */
+        width: 110px;
+        height: 160px; /* Aumentei um pouco para caber o aviso se precisar */
         border-radius: 8px;
         border: 1px solid #ddd;
         background-color: #fff;
@@ -35,6 +35,7 @@
         align-items: center;
         padding: 5px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: all 0.2s;
     }
 
     /* A IMAGEM COMO BACKGROUND */
@@ -57,6 +58,21 @@
         border: 1px solid #ccc;
         border-radius: 4px;
         font-weight: bold;
+        font-size: 1rem;
+    }
+    
+    /* --- ESTILO DE ERRO (DUPLICADO) --- */
+    .input-error {
+        border: 2px solid #ff0000 !important;
+        background-color: #ffe6e6;
+        color: #ff0000;
+        animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+        70% { box-shadow: 0 0 0 6px rgba(255, 0, 0, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
     }
     
     .order-label {
@@ -191,14 +207,15 @@
                             <label style="font-weight:700; font-size:0.9rem; color:#004085; display:block;">🔢 Ordem das Fotos</label>
                             <span style="font-size: 0.85rem; color: #004085;">
                                 Digite a ordem no quadradinho abaixo de cada foto.<br>
-                                <strong>1</strong> = Capa principal, <strong>2</strong> = Segunda foto, etc.
+                                <strong>1</strong> = Capa, <strong>2</strong> = Segunda foto, etc.<br>
+                                <strong style="color:red">Não repita números!</strong>
                             </span>
                         </div>
                         
                         <div id="image-preview">
                             </div>
 
-                        <button type="submit" class="buy-button">Salvar Produto</button>
+                        <button type="submit" id="save-btn" class="buy-button">Salvar Produto</button>
                     </form>
                 </div>
 
