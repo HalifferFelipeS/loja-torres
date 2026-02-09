@@ -8,44 +8,53 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
   <style>
     /* Container das fotos */
     #image-preview {
         display: flex;
-        gap: 10px;
+        gap: 15px;
         flex-wrap: wrap;
-        padding: 10px;
-        border: 2px dashed #e9ecef;
+        padding: 15px;
+        border: 2px dashed #ccc;
         border-radius: 12px;
-        min-height: 100px;
-        background: #fafafa;
+        min-height: 120px;
+        background: #f9f9f9;
+        align-items: flex-start;
     }
     
-    /* Item Individual */
+    /* O item (cartãozinho) */
     .preview-item {
         position: relative;
-        cursor: grab;
-        transition: transform 0.2s;
+        cursor: grab; /* Mãozinha aberta */
+        transition: transform 0.1s;
+        /* Impede seleção de texto azul */
         user-select: none;
+        -webkit-user-select: none;
+        touch-action: none; /* Ajuda em telas touch */
     }
     
-    .preview-item:active { cursor: grabbing; }
-
-    /* Imagem */
-    .preview-item img {
-        height: 80px;
-        width: 80px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 2px solid #ddd;
-        background: #fff;
-        display: block;
-        /* Removido o pointer-events: none para permitir interação do mouse */
+    .preview-item:active {
+        cursor: grabbing; /* Mãozinha fechada */
     }
 
-    /* Botão Remover */
+    /* A IMAGEM (O SEGREDO ESTÁ AQUI) */
+    .preview-item img {
+        height: 90px;
+        width: 90px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        background: #fff;
+        display: block;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        
+        /* BLOQUEIA INTERAÇÃO DIRETA COM A IMAGEM PARA PERMITIR ARRASTAR O BLOCO */
+        pointer-events: none; 
+    }
+
+    /* Botão Remover (Precisa liberar o clique) */
     .remove-btn {
         position: absolute;
         top: -8px;
@@ -53,9 +62,9 @@
         background: #ff4444;
         color: white;
         border-radius: 50%;
-        width: 22px;
-        height: 22px;
-        font-size: 14px;
+        width: 24px;
+        height: 24px;
+        font-size: 16px;
         font-weight: bold;
         display: flex;
         align-items: center;
@@ -64,21 +73,30 @@
         border: 2px solid #fff;
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         z-index: 10;
+        
+        /* Libera o clique no botão X */
+        pointer-events: auto; 
+    }
+    .remove-btn:hover {
+        background: #cc0000;
+        transform: scale(1.1);
     }
 
-    /* Espaço vazio onde a imagem vai cair */
+    /* Classes visuais do SortableJS */
     .sortable-ghost {
-        opacity: 0.2;
-        background-color: #e2e2e2;
+        opacity: 0.3;
+        background: #e0e0e0;
         border: 2px dashed #999;
+        border-radius: 8px;
     }
 
-    /* A imagem que fica "grudada" no mouse enquanto você arrasta */
-    .sortable-fallback {
-        opacity: 0.9 !important;
-        transform: scale(1.05);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    .sortable-drag {
         cursor: grabbing;
+        opacity: 1 !important;
+        background: #fff;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        transform: scale(1.05);
+        z-index: 100;
     }
   </style>
 </head>
@@ -171,7 +189,7 @@
                             <div class="form-group">
                                 <label>Adicionar Fotos</label>
                                 <input type="file" id="product-images" accept="image/*" multiple>
-                                <small style="color:#666; font-size:0.8rem;">Selecione para adicionar. Arraste abaixo para ordenar.</small>
+                                <small style="color:#666; font-size:0.8rem;">Clique para adicionar mais fotos.</small>
                             </div>
                         </div>
 
@@ -180,7 +198,11 @@
                             <textarea id="product-description" rows="3"></textarea>
                         </div>
                         
-                        <label style="font-weight:600; font-size:0.9rem; color:#666; margin-bottom:5px; display:block;">Ordem das Fotos (Arraste para organizar):</label>
+                        <div style="background: #fff3cd; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ffeeba;">
+                            <label style="font-weight:700; font-size:0.9rem; color:#856404; display:block;">📷 Ordem das Fotos</label>
+                            <span style="font-size: 0.85rem; color: #856404;">Arraste os quadradinhos para mudar a ordem. A primeira foto será a capa.</span>
+                        </div>
+                        
                         <div id="image-preview">
                             </div>
 
